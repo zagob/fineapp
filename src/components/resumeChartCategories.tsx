@@ -52,7 +52,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export function Component() {
+export function ResumeChartCategories() {
   const totalVisitors = React.useMemo(() => {
     return chartData.reduce((acc, curr) => acc + curr.visitors, 0)
   }, [])
