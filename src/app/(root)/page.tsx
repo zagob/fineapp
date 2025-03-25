@@ -1,5 +1,7 @@
+import { CardContentAccountBank } from "@/components/CardContentAccountBank";
 import { CardValue } from "@/components/CardValue";
 import { columns, Transaction } from "@/components/columnsResumoTransactions";
+import { RegisterAccountBank } from "@/components/RegisterAccountBank";
 import { RegisterTransactionDialog } from "@/components/RegisterTransactionDialog";
 import { ResumeChartCategories } from "@/components/resumeChartCategories";
 import { ResumeTransactions } from "@/components/resumeTransactions";
@@ -121,16 +123,12 @@ export default async function Home() {
             <EyeIcon className="size-5 text-neutral-500" />
           </CardHeader>
           <CardContent className="p-0">
-            <div className="flex items-center justify-between border-b border-neutral-800 px-4 pb-4 w-full">
-              <div className="flex items-center gap-2">
-                <div className="bg-orange-400 rounded-full size-10" />
-                <div className="flex flex-col">
-                  <h2 className="leading-tight">Itaú</h2>
-                  <span className="text-xs">Conta Corrente</span>
-                </div>
-              </div>
-              <span>R$42.000,22</span>
-            </div>
+            <CardContentAccountBank
+              title="Itaú"
+              type_account="Conta Corrente"
+              value="R$42.000,22"
+            />
+
             <div className="flex items-center justify-between border-b border-neutral-800 p-4 w-full">
               <div className="flex items-center gap-2">
                 <div className="bg-green-400 rounded-full size-10" />
@@ -142,12 +140,7 @@ export default async function Home() {
               <span>R$42.000,22</span>
             </div>
             <div className="p-4">
-              <Button
-                variant="outline"
-                className="w-full dark:bg-neutral-700 dark:border-neutral-600"
-              >
-                Add Bank
-              </Button>
+              <RegisterAccountBank />
             </div>
           </CardContent>
         </Card>

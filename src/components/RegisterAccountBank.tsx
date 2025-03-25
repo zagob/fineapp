@@ -9,8 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "./ui/button";
-import { Calendar } from "./ui/calendar";
-import { FormEvent, useState } from "react";
+import { FormEvent } from "react";
 import {
   Select,
   SelectContent,
@@ -23,32 +22,24 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "./ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Textarea } from "./ui/textarea";
-
-interface RegisterTransactionDialogProps {
-  type: "income" | "expense";
-}
 
 const formSchema = z.object({
-  date: z.date(),
   bank: z.string(),
-  categories: z.string(),
-  description: z.string(),
+  typeaccount: z.string(),
   value: z.string(),
 });
 
 type FormSchemaProps = z.infer<typeof formSchema>;
 
-export const RegisterTransactionDialog = ({
-  type,
-}: RegisterTransactionDialogProps) => {
+export const RegisterAccountBank = () => {
   const form = useForm<FormSchemaProps>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      date: new Date(),
+      bank: "Itau",
+      typeaccount: "Poupança",
+      value: "",
     },
   });
-  const [date, setDate] = useState<Date>();
 
   const handleSubmitForm = (values: FormSchemaProps) => {
     console.log(values);
@@ -71,25 +62,16 @@ export const RegisterTransactionDialog = ({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        {type === "income" ? (
-          <Button
-            variant="outline"
-            className="dark:bg-green-300 dark:hover:bg-green-200 dark:hover:text-green-950 dark:border-green-200 dark:text-green-950"
-          >
-            Income
-          </Button>
-        ) : (
-          <Button
-            variant="outline"
-            className="dark:bg-red-400 dark:hover:bg-red-300 dark:hover:text-red-50 dark:border-red-300 dark:text-red-50 "
-          >
-            Expense
-          </Button>
-        )}
+        <Button
+          variant="outline"
+          className="w-full dark:bg-neutral-700 dark:border-neutral-600"
+        >
+          Add Bank
+        </Button>
       </DialogTrigger>
       <DialogContent className="bg-zinc-800 border-zinc-700">
         <DialogHeader>
-          <DialogTitle>Add {type}</DialogTitle>
+          <DialogTitle>Registrar Banco</DialogTitle>
           <DialogDescription asChild>
             <Form {...form}>
               <form
@@ -97,28 +79,13 @@ export const RegisterTransactionDialog = ({
                 className="flex flex-col gap-2"
               >
                 <div className="flex gap-4">
-                  <FormField
-                    control={form.control}
-                    name="date"
-                    render={({ field }) => (
-                      <Calendar
-                        mode="single"
-                        disableNavigation
-                        selected={date}
-                        onSelect={setDate}
-                        className="rounded-md mx-auto border border-neutral-700 text-center"
-                        {...field}
-                      />
-                    )}
-                  />
-
                   <div className="flex flex-col gap-4">
                     <FormField
                       control={form.control}
                       name="bank"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Bank:</FormLabel>
+                          <FormLabel>Account Bank:</FormLabel>
                           <FormControl>
                             <Select
                               onValueChange={field.onChange}
@@ -139,41 +106,14 @@ export const RegisterTransactionDialog = ({
 
                     <FormField
                       control={form.control}
-                      name="categories"
+                      name="typeaccount"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Categories:</FormLabel>
+                          <FormLabel>Type account:</FormLabel>
                           <FormControl>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <SelectTrigger className="w-full dark:text-neutral-200 dark:hover:bg-neutral-900 dark:bg-neutral-900 dark:border-neutral-700">
-                                <SelectValue placeholder="Select a category" />
-                              </SelectTrigger>
-                              <SelectContent className="dark:bg-neutral-400 border-none">
-                                <SelectItem value="categorie1">
-                                  categorie1
-                                </SelectItem>
-                                <SelectItem value="categorie2">
-                                  categorie2
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Description:</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              className="resize-none dark:bg-neutral-900 dark:border-neutral-700"
+                            <Input
+                              className="dark:bg-neutral-900 dark:border-neutral-700"
+                              placeholder="Débit"
                               {...field}
                             />
                           </FormControl>
@@ -186,11 +126,11 @@ export const RegisterTransactionDialog = ({
                       name="value"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Price:</FormLabel>
+                          <FormLabel>Value:</FormLabel>
                           <FormControl>
                             <Input
                               className="dark:bg-neutral-900 dark:border-neutral-700"
-                              placeholder="R$10,00"
+                              placeholder="R$1.000,00"
                               onInput={handleOnInput}
                               {...field}
                             />
