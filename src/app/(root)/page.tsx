@@ -129,16 +129,12 @@ export default async function Home() {
               value="R$42.000,22"
             />
 
-            <div className="flex items-center justify-between border-b border-neutral-800 p-4 w-full">
-              <div className="flex items-center gap-2">
-                <div className="bg-green-400 rounded-full size-10" />
-                <div className="flex flex-col">
-                  <h2 className="leading-tight">PicPay</h2>
-                  <span className="text-xs">Conta Corrente</span>
-                </div>
-              </div>
-              <span>R$42.000,22</span>
-            </div>
+            <CardContentAccountBank
+              title="PicPay"
+              type_account="Conta Corrente"
+              value="R$12.353,02"
+            />
+
             <div className="p-4">
               <RegisterAccountBank />
             </div>

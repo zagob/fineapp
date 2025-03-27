@@ -69,14 +69,14 @@ export const RegisterAccountBank = () => {
           Add Bank
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-zinc-800 border-zinc-700">
+      <DialogContent className="bg-zinc-800 border-zinc-700 w-[300px]">
         <DialogHeader>
           <DialogTitle>Registrar Banco</DialogTitle>
           <DialogDescription asChild>
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(handleSubmitForm)}
-                className="flex flex-col gap-2"
+                className="flex flex-col items-center gap-2"
               >
                 <div className="flex gap-4">
                   <div className="flex flex-col gap-4">
@@ -141,7 +141,7 @@ export const RegisterAccountBank = () => {
                   </div>
                 </div>
 
-                <Button type="submit">Register Transaction</Button>
+                <Button type="submit">Register Bank</Button>
               </form>
             </Form>
           </DialogDescription>
