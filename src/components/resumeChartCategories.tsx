@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { TrendingUp } from "lucide-react";
-import { Label, Pie, PieChart } from "recharts";
+import { Cell, Label, Pie, PieChart } from "recharts";
 
 import {
   Card,
@@ -66,6 +66,14 @@ export function ResumeChartCategories() {
 
   const remainingBalance = totalIncome - totalExpense;
 
+  const data = [
+    { name: "Group A", value: 400 },
+    { name: "Group B", value: 300 },
+    { name: "Group C", value: 300 },
+    { name: "Group D", value: 200 },
+  ];
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
@@ -78,6 +86,37 @@ export function ResumeChartCategories() {
           className="mx-auto aspect-square max-h-[250px]"
         >
           <PieChart>
+          <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent hideLabel />}
+            />
+            <Pie
+              data={data}
+              dataKey="value"
+              // cx={320}
+              // cy={200}
+              startAngle={180}
+              endAngle={0}
+              innerRadius={60}
+              outerRadius={80}
+              fill="#8884d8"
+              paddingAngle={5}
+            />
+            <Pie
+              data={data}
+              dataKey="value"
+              // cx={320}
+              cy={125}
+              startAngle={0}
+              endAngle={-180}
+              innerRadius={60}
+              outerRadius={80}
+              fill="#82ca9d"
+              paddingAngle={5}
+            />
+          </PieChart>
+
+          {/* <PieChart>
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent hideLabel />}
@@ -119,7 +158,7 @@ export function ResumeChartCategories() {
                 }}
               />
             </Pie>
-          </PieChart>
+          </PieChart> */}
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col gap-2 text-sm">

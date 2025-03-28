@@ -16,8 +16,11 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  accountBanks AccountBanks[]
+  categories   Categories[]
+  transactions Transactions[]
 
   @@map("users")
 }
@@ -63,4 +66,67 @@ model VerificationToken {
 
   @@id([identifier, token])
   @@map("verification_tokens")
+}
+
+enum BankName {
+  BANCO_DO_BRASIL
+  ITAU
+  ITI
+  PICPAY
+  NUBANK
+  BRADESCO
+  SANTANDER
+  CAIXA
+  INTER
+  C6
+}
+
+model AccountBanks {
+  id          String   @id @default(cuid())
+  bank        BankName
+  description String
+  amount      Int
+
+  userId       String
+  user         User           @relation(fields: [userId], references: [id])
+  Transactions Transactions[]
+
+  @@map("account_banks")
+}
+
+enum Type {
+  INCOME
+  EXPENSE
+}
+
+model Categories {
+  id    String @id @default(cuid())
+  name  String
+  type  Type   @default(EXPENSE)
+  color String
+  icon  String
+
+  user         User           @relation(fields: [userId], references: [id])
+  userId       String
+  Transactions Transactions[]
+
+  @@map("categories")
+}
+
+model Transactions {
+  id             String   @id @default(cuid())
+  date           DateTime
+  type           Type     @default(EXPENSE)
+  accountBanksId String
+  categoryId     String
+  description    String?
+  value          Int
+
+  bank     AccountBanks @relation(fields: [accountBanksId], references: [id])
+  category Categories   @relation(fields: [categoryId], references: [id])
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  @@map("transactions")
 }

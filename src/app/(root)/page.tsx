@@ -1,18 +1,12 @@
-import { CardContentAccountBank } from "@/components/CardContentAccountBank";
 import { CardValue } from "@/components/CardValue";
 import { columns, Transaction } from "@/components/columnsResumoTransactions";
-import { RegisterAccountBank } from "@/components/RegisterAccountBank";
+
 import { RegisterTransactionDialog } from "@/components/RegisterTransactionDialog";
+import { ResumeAccountBanks } from "@/components/ResumeAccountBanks";
 import { ResumeChartCategories } from "@/components/resumeChartCategories";
 import { ResumeTransactions } from "@/components/resumeTransactions";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Popover,
   PopoverContent,
@@ -25,14 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { auth, signIn } from "@/lib/auth";
 import { format, getMonth } from "date-fns";
-import {
-  CircleDollarSign,
-  EyeIcon,
-  TrendingDown,
-  TrendingUp,
-} from "lucide-react";
+import { CircleDollarSign, TrendingDown, TrendingUp } from "lucide-react";
+import { Cell, Pie, PieChart } from "recharts";
 
 async function getData(): Promise<Transaction[]> {
   return [
@@ -56,25 +45,7 @@ async function getData(): Promise<Transaction[]> {
 }
 
 export default async function Home() {
-  const session = await auth();
-
   const data = await getData();
-
-  if (!session) {
-    return (
-      <main>
-        <div>Not authenticated</div>
-        <button
-          onClick={async () => {
-            "use server";
-            await signIn("google");
-          }}
-        >
-          SignIn
-        </button>
-      </main>
-    );
-  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -114,32 +85,7 @@ export default async function Home() {
       </div>
 
       <div className="flex gap-8">
-        <Card className="w-[300px] bg-transparent text-zinc-50 border-neutral-800">
-          <CardHeader className="flex items-center justify-between">
-            <div className="flex flex-col gap-1">
-              <CardTitle>Banks</CardTitle>
-              <CardDescription>Total: R$42.000,22</CardDescription>
-            </div>
-            <EyeIcon className="size-5 text-neutral-500" />
-          </CardHeader>
-          <CardContent className="p-0">
-            <CardContentAccountBank
-              title="Itaú"
-              type_account="Conta Corrente"
-              value="R$42.000,22"
-            />
-
-            <CardContentAccountBank
-              title="PicPay"
-              type_account="Conta Corrente"
-              value="R$12.353,02"
-            />
-
-            <div className="p-4">
-              <RegisterAccountBank />
-            </div>
-          </CardContent>
-        </Card>
+        <ResumeAccountBanks />
 
         <Card className="flex-1 bg-transparent text-zinc-50 border-neutral-800">
           <CardHeader className="px-2">
@@ -165,6 +111,7 @@ export default async function Home() {
             <ResumeTransactions columns={columns} data={data} />
           </CardContent>
         </Card>
+
         <ResumeChartCategories />
       </div>
     </div>
