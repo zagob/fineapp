@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "./ui/button";
 import {
   Command,
@@ -11,17 +11,39 @@ import {
   CommandList,
 } from "./ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import * as LucideIcons from "lucide-react";
+// import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
+import dynamic from "next/dynamic";
+
+const iconNames = [
+  "Home",
+  "Settings",
+  "User",
+  "Bell",
+  "Star",
+  "Heart",
+  "Camera",
+  "Music",
+  "Lock",
+  "Globe",
+];
 
 export function IconSelect() {
-  const iconNames = Object.keys(LucideIcons.icons);
+  //   const iconNames = Object.keys(LucideIcons.icons);
   const [selectedIcon, setSelectedIcon] = useState(iconNames[0]);
   const [open, setOpen] = useState(false);
 
-  const IconComponentSelected = LucideIcons[
-    selectedIcon as keyof typeof LucideIcons
-  ] as React.ElementType;
+  //   const IconComponentSelected = LucideIcons[
+  //     selectedIcon as keyof typeof LucideIcons
+  //   ] as React.ElementType;
+
+  const IconComponentSelected = useMemo(
+    () =>
+      dynamic(() => import("lucide-react").then((mod) => mod[selectedIcon]), {
+        ssr: false,
+      }),
+    [selectedIcon]
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -38,9 +60,9 @@ export function IconSelect() {
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
         <Command>
-          <CommandInput placeholder="Search framework..." />
+          <CommandInput placeholder="Pesquisar icone..." />
           <CommandList>
-            <CommandEmpty>No framework found.</CommandEmpty>
+            <CommandEmpty>Nenhum icone encontrado.</CommandEmpty>
             <CommandGroup>
               {iconNames.map((icon) => {
                 const IconComponent = LucideIcons[
