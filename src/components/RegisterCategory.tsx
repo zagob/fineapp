@@ -6,7 +6,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "./ui/button";
 import {
@@ -21,10 +20,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "./ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { PlusIcon } from "lucide-react";
 import * as LucideIcon from "lucide-react";
 import { ICONS_CATEGORIES_EXPENSE } from "@/variants/iconsCategories";
 import COLORS from "@/variants/colorCategories";
+import { useMutation } from "@tanstack/react-query";
+import { createCategory } from "@/actions/categories.actions";
+import { toast } from "sonner";
 
 const iconNames = Object.keys(
   ICONS_CATEGORIES_EXPENSE
@@ -34,17 +35,26 @@ const formSchema = z.object({
   name: z.string(),
   icon: z.string(),
   color: z.string(),
-  typeaccount: z.string(),
+  // typeaccount: z.string().default("INCOME"),
   value: z.string(),
 });
 
 type FormSchemaProps = z.infer<typeof formSchema>;
 
-export const RegisterCategory = () => {
+interface RegisterCategoryProps {
+  type: "INCOME" | "EXPENSE";
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}
+
+export const RegisterCategory = ({
+  type,
+  open,
+  setOpen,
+}: RegisterCategoryProps) => {
   const form = useForm<FormSchemaProps>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      typeaccount: "Poupança",
       name: "",
       icon: "",
       color: "",
@@ -52,28 +62,33 @@ export const RegisterCategory = () => {
     },
   });
 
-  const handleSubmitForm = (values: FormSchemaProps) => {
-    console.log(values);
-  };
+  const { mutate: handleSubmitForm, isPending } = useMutation({
+    mutationFn: async (data: FormSchemaProps) => {
+      await createCategory({
+        ...data,
+        typeaccount: type,
+      });
+    },
+    onSuccess: () => {
+      toast.success("Categoria criada com sucesso!");
+      setOpen(false);
+    }
+  });
 
   const IconSelected = LucideIcon[
     form.watch("icon") as keyof typeof LucideIcon
   ] as React.ElementType;
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button type="button" className="border dark:border-neutral-700">
-          <PlusIcon />
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="bg-zinc-800 border-zinc-700 w-[300px]">
         <DialogHeader>
           <DialogTitle>Categoria</DialogTitle>
           <DialogDescription asChild>
             <Form {...form}>
               <form
-                onSubmit={form.handleSubmit(handleSubmitForm)}
+                id="createCategory"
+                onSubmit={form.handleSubmit((data) => handleSubmitForm(data))}
                 className="flex flex-col items-center gap-2"
               >
                 <div className="flex gap-4 w-full">
@@ -190,8 +205,17 @@ export const RegisterCategory = () => {
                           </div>
                         </div>
                       )}
-                    <Button className="w-full" type="submit">
-                      Criar Categoria
+                    <Button
+                      disabled={isPending}
+                      className="w-full"
+                      type="submit"
+                      form="createCategory"
+                    >
+                      {isPending ? (
+                        <LucideIcon.Loader2 className="mr-2 animate-spin" />
+                      ) : (
+                        "Criar Categoria"
+                      )}
                     </Button>
                   </div>
                 </div>

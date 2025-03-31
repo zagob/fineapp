@@ -10,6 +10,10 @@ export default async function RootLayout({
 }>) {
   const session = await auth();
 
+  console.log({
+    session
+  })
+
   if (!session) return (
     <main>
         <div className="text-2xl">Not authenticated</div>

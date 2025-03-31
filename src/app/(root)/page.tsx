@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/select";
 import { format, getMonth } from "date-fns";
 import { CircleDollarSign, TrendingDown, TrendingUp } from "lucide-react";
-import { Cell, Pie, PieChart } from "recharts";
 
 async function getData(): Promise<Transaction[]> {
   return [
@@ -101,8 +100,8 @@ export default async function Home() {
                   align="end"
                   className="w-fit flex flex-col gap-2 dark:bg-neutral-700 dark:border-neutral-600"
                 >
-                  <RegisterTransactionDialog type="expense" />
-                  <RegisterTransactionDialog type="income" />
+                  <RegisterTransactionDialog type="EXPENSE" />
+                  <RegisterTransactionDialog type="INCOME" />
                 </PopoverContent>
               </Popover>
             </CardTitle>

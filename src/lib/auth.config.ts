@@ -1,33 +1,4 @@
-import  { NextAuthConfig } from "next-auth";
-// import GoogleProvider from "next-auth/providers/google";
-
-// export const authOptions = NextAuth({
-//   providers: [
-//     GoogleProvider({
-//       clientId: "",
-//       clientSecret: "",
-//     }),
-//   ],
-//   callbacks: {
-//     async signIn({ account, profile }) {
-//       if (account?.provider === "google") {
-//         const googleProfile = profile as {
-//           email_verified?: boolean;
-//           email?: string;
-//         };
-//         if (
-//           googleProfile.email_verified &&
-//           googleProfile.email?.endsWith("@example.com")
-//         ) {
-//           return true;
-//         }
-//         return false;
-//       }
-
-//       return true;
-//     },
-//   },
-// });
+import { NextAuthConfig } from "next-auth";
 
 export const authConfig = {
   pages: {
@@ -45,9 +16,21 @@ export const authConfig = {
       }
       return true;
     },
+    jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+
+      return token;
+    },
+    session({ session, token }) {
+      session.user.id = token.sub as string;
+
+      return session;
+    },
   },
   providers: [],
   session: {
-    strategy: 'jwt',
-  }
+    strategy: "jwt",
+  },
 } satisfies NextAuthConfig;

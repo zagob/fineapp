@@ -22,11 +22,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "./ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useMutation } from "@tanstack/react-query";
+import { createBank } from "@/actions/banks.actions";
 
 const formSchema = z.object({
-  bank: z.string(),
-  typeaccount: z.string(),
-  value: z.string(),
+  bank: z.enum(["BANCO_DO_BRASIL", "ITAU", "ITI", "PICPAY", "NUBANK", "BRADESCO", "SANTANDER", "CAIXA", "INTER", "C6"]),
+  description: z.string(),
+  amount: z.string(),
 });
 
 type FormSchemaProps = z.infer<typeof formSchema>;
@@ -36,12 +38,15 @@ export const RegisterAccountBank = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       bank: "Itau",
-      typeaccount: "Poupança",
-      value: "",
+      description: "Poupança",
+      amount: "",
     },
   });
 
-  const handleSubmitForm = (values: FormSchemaProps) => {
+  const handleSubmitForm = ({ description, bank, amount }: FormSchemaProps) => {
+    const data = {
+      ...values,
+    };
     console.log(values);
   };
 
@@ -58,6 +63,12 @@ export const RegisterAccountBank = () => {
 
     input.value = formattedValue;
   };
+
+  const {} = useMutation({
+    mutationFn: async (values: FormSchemaProps) => {
+      await createBank(values);
+    },
+  });
 
   return (
     <Dialog>
@@ -106,7 +117,7 @@ export const RegisterAccountBank = () => {
 
                     <FormField
                       control={form.control}
-                      name="typeaccount"
+                      name="description"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Type account:</FormLabel>
@@ -123,7 +134,7 @@ export const RegisterAccountBank = () => {
 
                     <FormField
                       control={form.control}
-                      name="value"
+                      name="amount"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Value:</FormLabel>
