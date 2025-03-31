@@ -139,7 +139,7 @@ export const RegisterTransactionDialog = ({
                       )}
                     />
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-end gap-1">
                       <FormField
                         control={form.control}
                         name="categories"

@@ -9,7 +9,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "./ui/button";
-import { FormEvent } from "react";
 import {
   Select,
   SelectContent,
@@ -23,12 +22,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { PlusIcon } from "lucide-react";
-import { IconSelect } from "./IconSelect";
 import * as LucideIcon from "lucide-react";
 import { ICONS_CATEGORIES_EXPENSE } from "@/variants/iconsCategories";
+import COLORS from "@/variants/colorCategories";
+
+const iconNames = Object.keys(
+  ICONS_CATEGORIES_EXPENSE
+) as (keyof typeof ICONS_CATEGORIES_EXPENSE)[];
 
 const formSchema = z.object({
-  bank: z.string(),
+  name: z.string(),
+  icon: z.string(),
+  color: z.string(),
   typeaccount: z.string(),
   value: z.string(),
 });
@@ -39,8 +44,10 @@ export const RegisterCategory = () => {
   const form = useForm<FormSchemaProps>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      bank: "Itau",
       typeaccount: "Poupança",
+      name: "",
+      icon: "",
+      color: "",
       value: "",
     },
   });
@@ -49,114 +56,145 @@ export const RegisterCategory = () => {
     console.log(values);
   };
 
-  const handleOnInput = (event: FormEvent<HTMLInputElement>) => {
-    const input = event.target as HTMLInputElement;
-    const rawValue = input.value.replace(/\D/g, "");
-
-    if (!rawValue) return;
-
-    const formattedValue = new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(parseFloat(rawValue) / 100);
-
-    input.value = formattedValue;
-  };
+  const IconSelected = LucideIcon[
+    form.watch("icon") as keyof typeof LucideIcon
+  ] as React.ElementType;
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button type="button">
+        <Button type="button" className="border dark:border-neutral-700">
           <PlusIcon />
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-zinc-800 border-zinc-700 w-[300px]">
         <DialogHeader>
-          <DialogTitle>Registrar Categoria</DialogTitle>
+          <DialogTitle>Categoria</DialogTitle>
           <DialogDescription asChild>
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(handleSubmitForm)}
                 className="flex flex-col items-center gap-2"
               >
-                <div className="flex gap-4">
-                  <div className="flex flex-col gap-4">
-                    <IconSelect />
-
-                    {ICONS_CATEGORIES_EXPENSE.map((icon) => {
-                      const IconComponent = LucideIcon[
-                        icon as keyof typeof LucideIcon
-                      ] as React.ElementType;
-
-                      return (
-                        <div key={icon}>
-                          <IconComponent />
-                        </div>
-                      );
-                    })}
-
+                <div className="flex gap-4 w-full">
+                  <div className="flex flex-col gap-4 w-full">
                     <FormField
                       control={form.control}
-                      name="bank"
+                      name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Account Bank:</FormLabel>
+                          <FormLabel>Name:</FormLabel>
                           <FormControl>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
+                            <Input
+                              className="dark:bg-neutral-900 dark:border-neutral-700"
+                              placeholder="Mercado, Farmacia, etc..."
+                              {...field}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <FormField
+                        control={form.control}
+                        name="icon"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Icon:</FormLabel>
+                            <FormControl>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <SelectTrigger className="dark:text-neutral-200 w-full dark:hover:bg-neutral-900 dark:bg-neutral-900 dark:border-neutral-700">
+                                  <SelectValue placeholder="icone" />
+                                </SelectTrigger>
+                                <SelectContent className="dark:bg-neutral-200 border-none">
+                                  {iconNames.map((icon) => {
+                                    const IconComponent =
+                                      ICONS_CATEGORIES_EXPENSE[icon];
+
+                                    return (
+                                      <SelectItem
+                                        key={icon}
+                                        value={icon}
+                                        className="my-px h-6 aria-selected:text-white"
+                                      >
+                                        <IconComponent />
+                                      </SelectItem>
+                                    );
+                                  })}
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="color"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Color:</FormLabel>
+                            <FormControl>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <SelectTrigger
+                                  style={{
+                                    backgroundColor: field.value,
+                                  }}
+                                  className="dark:text-neutral-200 w-full dark:hover:bg-neutral-900 dark:bg-neutral-900 dark:border-neutral-700"
+                                >
+                                  <SelectValue placeholder="color" />
+                                </SelectTrigger>
+                                <SelectContent className="dark:bg-neutral-200 border-none">
+                                  {Object.entries(COLORS)
+                                    .flatMap(([, shades]) =>
+                                      Object.values(shades)
+                                    )
+                                    .map((color) => (
+                                      <SelectItem
+                                        key={color}
+                                        value={color}
+                                        style={{ backgroundColor: color }}
+                                        className="my-px h-6 aria-selected:text-white"
+                                      />
+                                    ))}
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    {form.watch("color") &&
+                      form.watch("icon") &&
+                      form.watch("name") && (
+                        <div className="flex items-center gap-4 justify-start w-full">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="size-8 flex items-center justify-center rounded-full border border-zinc-700"
+                              style={{
+                                backgroundColor: form.watch("color"),
+                              }}
                             >
-                              <SelectTrigger className="dark:text-neutral-200 w-full dark:hover:bg-neutral-900 dark:bg-neutral-900 dark:border-neutral-700">
-                                <SelectValue placeholder="Select a bank" />
-                              </SelectTrigger>
-                              <SelectContent className="dark:bg-neutral-400 border-none">
-                                <SelectItem value="bank1">Bank1</SelectItem>
-                                <SelectItem value="bank2">Bank2</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                        </FormItem>
+                              <IconSelected className="text-zinc-200 size-4" />
+                            </div>
+                            <p className="text-md text-zinc-300">
+                              {form.watch("name")}
+                            </p>
+                          </div>
+                        </div>
                       )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="typeaccount"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Type account:</FormLabel>
-                          <FormControl>
-                            <Input
-                              className="dark:bg-neutral-900 dark:border-neutral-700"
-                              placeholder="Débit"
-                              {...field}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="value"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Value:</FormLabel>
-                          <FormControl>
-                            <Input
-                              className="dark:bg-neutral-900 dark:border-neutral-700"
-                              placeholder="R$1.000,00"
-                              onInput={handleOnInput}
-                              {...field}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                    <Button className="w-full" type="submit">
+                      Criar Categoria
+                    </Button>
                   </div>
                 </div>
-
-                <Button type="submit">Register Bank</Button>
               </form>
             </Form>
           </DialogDescription>

@@ -1,49 +1,29 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Button } from "./ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "./ui/command";
+import { Command, CommandGroup, CommandItem, CommandList } from "./ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-// import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
-import dynamic from "next/dynamic";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { ICONS_CATEGORIES_EXPENSE } from "@/variants/iconsCategories";
 
-const iconNames = [
-  "Home",
-  "Settings",
-  "User",
-  "Bell",
-  "Star",
-  "Heart",
-  "Camera",
-  "Music",
-  "Lock",
-  "Globe",
-];
+const iconNames = Object.keys(
+  ICONS_CATEGORIES_EXPENSE
+) as (keyof typeof ICONS_CATEGORIES_EXPENSE)[];
 
 export function IconSelect() {
-  //   const iconNames = Object.keys(LucideIcons.icons);
-  const [selectedIcon, setSelectedIcon] = useState(iconNames[0]);
+  const [selectedIcon, setSelectedIcon] =
+    useState<keyof typeof ICONS_CATEGORIES_EXPENSE>("House");
   const [open, setOpen] = useState(false);
 
-  //   const IconComponentSelected = LucideIcons[
-  //     selectedIcon as keyof typeof LucideIcons
-  //   ] as React.ElementType;
+  const IconComponentSelected = ICONS_CATEGORIES_EXPENSE[selectedIcon];
 
-  const IconComponentSelected = useMemo(
-    () =>
-      dynamic(() => import("lucide-react").then((mod) => mod[selectedIcon]), {
-        ssr: false,
-      }),
-    [selectedIcon]
-  );
+  console.log({
+    ICONS_CATEGORIES_EXPENSE,
+    selectedIcon,
+    iconNames,
+  });
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -52,40 +32,35 @@ export function IconSelect() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-fit justify-between"
         >
           <IconComponentSelected />
-          <LucideIcons.ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="w-fit p-0">
         <Command>
-          <CommandInput placeholder="Pesquisar icone..." />
           <CommandList>
-            <CommandEmpty>Nenhum icone encontrado.</CommandEmpty>
             <CommandGroup>
               {iconNames.map((icon) => {
-                const IconComponent = LucideIcons[
-                  icon as keyof typeof LucideIcons
-                ] as React.ElementType;
+                const IconComponent = ICONS_CATEGORIES_EXPENSE[icon];
 
                 return (
                   <CommandItem
                     key={icon}
                     value={icon}
-                    onSelect={(currentValue) => {
-                      setSelectedIcon(currentValue);
+                    onSelect={() => {
+                      setSelectedIcon(icon);
                       setOpen(false);
                     }}
                   >
-                    <LucideIcons.Check
+                    <Check
                       className={cn(
                         "mr-2 h-4 w-4",
                         selectedIcon === icon ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    {icon}
-                    <IconComponent />
+                    <IconComponent className="size-4" />
                   </CommandItem>
                 );
               })}
