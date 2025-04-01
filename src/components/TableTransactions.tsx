@@ -1,5 +1,4 @@
-"use client"
-
+"use client";
 import {
   ColumnDef,
   flexRender,
@@ -15,15 +14,15 @@ import {
   TableRow,
 } from "./ui/table";
 
-interface ResumeTransactionsProps<TData, TValue> {
+interface TableTransactionsProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export const ResumeTransactions = <TData, TValue>({
+export const TableTransactions = <TData, TValue>({
   columns,
   data,
-}: ResumeTransactionsProps<TData, TValue>) => {
+}: TableTransactionsProps<TData, TValue>) => {
   const table = useReactTable({
     data,
     columns,
@@ -33,7 +32,7 @@ export const ResumeTransactions = <TData, TValue>({
   return (
     <div>
       <Table>
-        <TableHeader >
+        <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id} className="border-b-zinc-700">
               {headerGroup.headers.map((header) => {

@@ -35,7 +35,6 @@ const formSchema = z.object({
   name: z.string(),
   icon: z.string(),
   color: z.string(),
-  // typeaccount: z.string().default("INCOME"),
   value: z.string(),
 });
 

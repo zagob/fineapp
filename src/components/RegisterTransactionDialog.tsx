@@ -27,8 +27,11 @@ import { Textarea } from "./ui/textarea";
 import { RegisterCategory } from "./RegisterCategory";
 import * as LucideIcon from "lucide-react";
 import { PlusIcon } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { getCategories } from "@/actions/categories.actions";
+import { getBanks } from "@/actions/banks.actions";
+import { createTransaction } from "@/actions/transactions.actions";
+import { Loading } from "./Loading";
 
 interface RegisterTransactionDialogProps {
   type: "INCOME" | "EXPENSE";
@@ -37,19 +40,25 @@ interface RegisterTransactionDialogProps {
 const formSchema = z.object({
   date: z.date(),
   bank: z.string(),
-  categories: z.string(),
-  description: z.string(),
+  category: z.string(),
+  description: z.string().optional(),
   value: z.string(),
 });
 
-type FormSchemaProps = z.infer<typeof formSchema>;
+export type FormSchemaProps = z.infer<typeof formSchema>;
 
 export const RegisterTransactionDialog = ({
   type,
 }: RegisterTransactionDialogProps) => {
+  const { data: banks } = useQuery({
+    queryKey: ["banks"],
+    queryFn: async () => await getBanks(),
+    staleTime: 1000,
+  });
+
   const { data: categories } = useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => await getCategories(),
+    queryKey: ["categories", type],
+    queryFn: async () => await getCategories({ type }),
   });
 
   const [openDialogCreateCategory, setOpenDialogCreateCategory] =
@@ -57,15 +66,10 @@ export const RegisterTransactionDialog = ({
   const form = useForm<FormSchemaProps>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      categories: "",
       date: new Date(),
     },
   });
   const [date, setDate] = useState<Date>();
-
-  const handleSubmitForm = (values: FormSchemaProps) => {
-    console.log(values);
-  };
 
   const handleOnInput = (event: FormEvent<HTMLInputElement>) => {
     const input = event.target as HTMLInputElement;
@@ -81,7 +85,22 @@ export const RegisterTransactionDialog = ({
     input.value = formattedValue;
   };
 
-  console.log({ categories });
+  const { mutate: handleSubmitForm, isPending } = useMutation({
+    mutationFn: async ({
+      bank,
+      category,
+      date,
+      value,
+      description,
+    }: FormSchemaProps) =>
+      await createTransaction({
+        bank,
+        category,
+        date,
+        value,
+        description,
+      }),
+  });
 
   return (
     <>
@@ -116,7 +135,9 @@ export const RegisterTransactionDialog = ({
               <Form {...form}>
                 <form
                   id="register-transaction-form"
-                  onSubmit={form.handleSubmit(handleSubmitForm)}
+                  onSubmit={form.handleSubmit((values) =>
+                    handleSubmitForm(values)
+                  )}
                   className="flex flex-col gap-2"
                 >
                   <div className="flex gap-4">
@@ -151,8 +172,13 @@ export const RegisterTransactionDialog = ({
                                   <SelectValue placeholder="Select a bank" />
                                 </SelectTrigger>
                                 <SelectContent className="dark:bg-neutral-400 border-none">
-                                  <SelectItem value="bank1">Bank1</SelectItem>
-                                  <SelectItem value="bank2">Bank2</SelectItem>
+                                  {banks?.banks.map((bank) => {
+                                    return (
+                                      <SelectItem key={bank.id} value={bank.id}>
+                                        {bank.bank}
+                                      </SelectItem>
+                                    );
+                                  })}
                                 </SelectContent>
                               </Select>
                             </FormControl>
@@ -163,7 +189,7 @@ export const RegisterTransactionDialog = ({
                       <div className="flex items-end gap-1">
                         <FormField
                           control={form.control}
-                          name="categories"
+                          name="category"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Categories:</FormLabel>
@@ -172,15 +198,19 @@ export const RegisterTransactionDialog = ({
                                   onValueChange={field.onChange}
                                   defaultValue={field.value}
                                 >
-                                  <SelectTrigger className="w-full dark:text-neutral-200 dark:hover:bg-neutral-900 dark:bg-neutral-900 dark:border-neutral-700">
+                                  <SelectTrigger
+                                    disabled={categories?.length === 0}
+                                    className="w-full dark:text-neutral-200 dark:hover:bg-neutral-900 dark:bg-neutral-900 dark:border-neutral-700"
+                                  >
                                     <SelectValue placeholder="Select a category" />
                                   </SelectTrigger>
                                   <SelectContent className="dark:bg-neutral-400 border-none">
                                     {categories?.map((category) => {
-                                      const IconName =
-                                        LucideIcon[
-                                          category.icon as keyof typeof LucideIcon
-                                        ] as ForwardRefExoticComponent<Omit<LucideIcon.LucideProps, "ref">>;
+                                      const IconName = LucideIcon[
+                                        category.icon as keyof typeof LucideIcon
+                                      ] as ForwardRefExoticComponent<
+                                        Omit<LucideIcon.LucideProps, "ref">
+                                      >;
 
                                       return (
                                         <SelectItem
@@ -244,8 +274,11 @@ export const RegisterTransactionDialog = ({
                               <Input
                                 className="dark:bg-neutral-900 dark:border-neutral-700"
                                 placeholder="R$10,00"
-                                onInput={handleOnInput}
-                                {...field}
+                                onChange={(e) => {
+                                  handleOnInput(e);
+                                  field.onChange(e);
+                                }}
+                                value={field.value ?? ""}
                               />
                             </FormControl>
                           </FormItem>
@@ -254,8 +287,12 @@ export const RegisterTransactionDialog = ({
                     </div>
                   </div>
 
-                  <Button type="submit" form="register-transaction-form">
-                    Register Transaction
+                  <Button
+                    disabled={isPending}
+                    type="submit"
+                    form="register-transaction-form"
+                  >
+                    {isPending ? <Loading /> : "Register Transaction"}
                   </Button>
                 </form>
               </Form>

@@ -1,10 +1,11 @@
 import { CardValue } from "@/components/CardValue";
-import { columns, Transaction } from "@/components/columnsResumoTransactions";
+import { FilterMonth } from "@/components/FilterMonth";
 
 import { RegisterTransactionDialog } from "@/components/RegisterTransactionDialog";
 import { ResumeAccountBanks } from "@/components/ResumeAccountBanks";
 import { ResumeChartCategories } from "@/components/resumeChartCategories";
-import { ResumeTransactions } from "@/components/resumeTransactions";
+import { ResumeTransactions } from "@/components/ResumeTransactions";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -12,56 +13,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { format, getMonth } from "date-fns";
 import { CircleDollarSign, TrendingDown, TrendingUp } from "lucide-react";
 
-async function getData(): Promise<Transaction[]> {
-  return [
-    {
-      id: "1",
-      date: "2023-01-01",
-      bank: "Itau",
-      type: "expense",
-      description: "Aluguel",
-      value: 100,
-    },
-    {
-      id: "2",
-      date: "2023-01-02",
-      bank: "Itau",
-      type: "income",
-      description: "Salário",
-      value: 2000,
-    },
-  ];
-}
-
 export default async function Home() {
-  const data = await getData();
-
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-center gap-12">
         <div className="flex items-center gap-2 uppercase text-sm text-neutral-400">
-          <Select value={getMonth(new Date()).toString()}>
-            <SelectTrigger className="w-[100px] bg-transparent dark:hover:bg-neutral-800 dark:bg-transparent dark:border-neutral-700">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className=" dark:bg-neutral-400 border-none">
-              {Array.from({ length: 12 }).map((_, index) => (
-                <SelectItem key={index} value={index.toString()}>
-                  {format(new Date(2025, index), "MMMM")}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <FilterMonth />
 
           {new Date().toLocaleDateString("pt-BR", {
             year: "numeric",
@@ -107,7 +66,7 @@ export default async function Home() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <ResumeTransactions columns={columns} data={data} />
+            <ResumeTransactions />
           </CardContent>
         </Card>
 

@@ -23,7 +23,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createBank } from "@/actions/banks.actions";
+import { updateBank } from "@/actions/banks.actions";
 import { transformToCents } from "@/lib/utils";
 import { Loading } from "./Loading";
 import { toast } from "sonner";
@@ -49,15 +49,30 @@ const formSchema = z.object({
 
 type FormSchemaProps = z.infer<typeof formSchema>;
 
-export const RegisterAccountBank = () => {
-  const queryClient = useQueryClient()
-  const [isOpen, setIsOpen] = useState(false)
+interface UpdatedAccountBankProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  bankId: string;
+  bank: BankNamesProps;
+  description: string;
+  amount: string;
+}
+
+export const UpdatedAccountBank = ({
+  open,
+  onOpenChange,
+  bankId,
+  bank,
+  description,
+  amount,
+}: UpdatedAccountBankProps) => {
+  const queryClient = useQueryClient();
   const form = useForm<FormSchemaProps>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      bank: "ITAU",
-      description: "Poupança",
-      amount: "",
+      bank,
+      description,
+      amount,
     },
   });
 
@@ -77,39 +92,40 @@ export const RegisterAccountBank = () => {
 
   const { mutate: handleSubmitForm, isPending } = useMutation({
     mutationFn: async ({ bank, description, amount }: FormSchemaProps) => {
-      return await createBank({
+      return await updateBank({
+        bankId,
         bank,
         description,
         amount: transformToCents(amount),
       });
     },
     onSuccess: (data) => {
-      console.log('data', data)
+      console.log("data", data);
 
-      if(!data) return toast.error('Erro ao criar banco')
+      if (!data) return toast.error("Erro ao criar banco");
 
-      toast.success("Banco criado com sucesso!");
+      toast.success("Banco atualizado com sucesso!");
 
       queryClient.invalidateQueries({
-        queryKey: ['banks']
-      })
-      setIsOpen(false)
-    }
+        queryKey: ["banks"],
+      });
+      onOpenChange(false);
+    },
   });
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {/* <DialogTrigger asChild>
         <Button
           variant="outline"
           className="w-full dark:bg-neutral-700 dark:border-neutral-600"
         >
           Add Bank
         </Button>
-      </DialogTrigger>
+      </DialogTrigger> */}
       <DialogContent className="bg-zinc-800 border-zinc-700 w-[300px]">
         <DialogHeader>
-          <DialogTitle>Registrar Banco</DialogTitle>
+          <DialogTitle>Atualizar Banco</DialogTitle>
           <DialogDescription asChild>
             <Form {...form}>
               <form
@@ -185,7 +201,7 @@ export const RegisterAccountBank = () => {
                 </div>
 
                 <Button disabled={isPending} type="submit">
-                  {isPending ? <Loading /> : "Register Bank"}
+                  {isPending ? <Loading /> : "Update Bank"}
                 </Button>
               </form>
             </Form>

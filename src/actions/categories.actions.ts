@@ -3,7 +3,11 @@
 import { prisma } from "@/lib/prisma";
 import { getUserId } from "./user.actions";
 
-export async function getCategories() {
+interface GetCategoriesProps {
+  type: "EXPENSE" | "INCOME";
+}
+
+export async function getCategories({ type }: GetCategoriesProps) {
   try {
     const userId = await getUserId();
 
@@ -12,6 +16,7 @@ export async function getCategories() {
     const categories = await prisma.categories.findMany({
       where: {
         userId,
+        type,
       },
     });
 
@@ -59,11 +64,11 @@ export async function createCategory({
 }
 
 interface UpdateCategoryProps {
-    name: string;
-    typeaccount: "EXPENSE" | "INCOME";
-    color: string;
-    icon: string;
-  }
+  name: string;
+  typeaccount: "EXPENSE" | "INCOME";
+  color: string;
+  icon: string;
+}
 
 export async function updateCategory(id: string, data: UpdateCategoryProps) {
   try {
