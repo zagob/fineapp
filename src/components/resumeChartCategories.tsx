@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { TrendingUp } from "lucide-react";
-import { Cell, Label, Pie, PieChart } from "recharts";
+import { Cell, Pie, PieChart } from "recharts";
 
 import {
   Card,
@@ -18,6 +18,9 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useQuery } from "@tanstack/react-query";
+import { getTypeTransactions } from "@/actions/transactions.actions";
+import { transformToCurrency } from "@/lib/utils";
 
 const chartData = [
   { category: "Salário", value: 2500, fill: "hsl(140, 70%, 50%)" }, // Verde forte
@@ -54,25 +57,38 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function ResumeChartCategories() {
-  const totalIncome = chartData
-    .filter((item) => ["Salário", "Freelance"].includes(item.category))
-    .reduce((acc, curr) => acc + curr.value, 0);
+  const { data: chartDataIncome } = useQuery({
+    queryKey: ["transactions-income"],
+    queryFn: async () => await getTypeTransactions("INCOME"),
+  });
 
-  const totalExpense = chartData
-    .filter((item) =>
-      ["Aluguel", "Alimentação", "Lazer"].includes(item.category)
-    )
-    .reduce((acc, curr) => acc + curr.value, 0);
+  const { data: chartDataExpense } = useQuery({
+    queryKey: ["transactions-expense"],
+    queryFn: async () => await getTypeTransactions("EXPENSE"),
+  });
 
-  const remainingBalance = totalIncome - totalExpense;
+  console.log({
+    chartDataIncome,
+  });
+  // const totalIncome = chartData
+  //   .filter((item) => ["Salário", "Freelance"].includes(item.category))
+  //   .reduce((acc, curr) => acc + curr.value, 0);
 
-  const data = [
-    { name: "Group A", value: 400 },
-    { name: "Group B", value: 300 },
-    { name: "Group C", value: 300 },
-    { name: "Group D", value: 200 },
-  ];
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+  // const totalExpense = chartData
+  //   .filter((item) =>
+  //     ["Aluguel", "Alimentação", "Lazer"].includes(item.category)
+  //   )
+  //   .reduce((acc, curr) => acc + curr.value, 0);
+
+  // const remainingBalance = totalIncome - totalExpense;
+
+  // const data = [
+  //   { name: "Group A", value: 400 },
+  //   { name: "Group B", value: 300 },
+  //   { name: "Group C", value: 300 },
+  //   { name: "Group D", value: 200 },
+  // ];
+  // const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
   return (
     <Card className="flex flex-col">
@@ -86,79 +102,48 @@ export function ResumeChartCategories() {
           className="mx-auto aspect-square max-h-[250px]"
         >
           <PieChart>
-          <ChartTooltip
+            <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent hideLabel />}
+              formatter={(value, name, item) => <div className="flex items-center gap-2">
+                {/* <span>{JSON.stringify(item)}</span> */}
+                <div className="size-5" style={{ backgroundColor: item.color }} />
+                <span>{name}</span>
+                <span>{transformToCurrency(Number(value))}</span>
+              </div>}
             />
             <Pie
-              data={data}
-              dataKey="value"
-              // cx={320}
-              // cy={200}
+              data={chartDataIncome?.transactionsFormattedToCategories || []}
+              dataKey="total"
+              label={({ value }) => `${transformToCurrency(value)}`}
               startAngle={180}
               endAngle={0}
               innerRadius={60}
               outerRadius={80}
-              fill="#8884d8"
+              // fill="#8884d8"
               paddingAngle={5}
-            />
+            >
+              {chartDataIncome?.transactions && chartDataIncome?.transactions.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.category.color} />
+              ))}
+            </Pie>
             <Pie
-              data={data}
-              dataKey="value"
-              // cx={320}
+              data={chartDataExpense?.transactionsFormattedToCategories || []}
+              dataKey="total"
+              label={({ value }) => `${transformToCurrency(value)}`}
               cy={125}
               startAngle={0}
               endAngle={-180}
               innerRadius={60}
               outerRadius={80}
-              fill="#82ca9d"
+              // fill="#82ca9d"
               paddingAngle={5}
-            />
-          </PieChart>
-
-          {/* <PieChart>
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
-            />
-            <Pie
-              data={chartData}
-              dataKey="value"
-              nameKey="category"
-              innerRadius={60}
-              strokeWidth={5}
             >
-              <Label
-                content={({ viewBox }) => {
-                  if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                    return (
-                      <text
-                        x={viewBox.cx}
-                        y={viewBox.cy}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                      >
-                        <tspan
-                          x={viewBox.cx}
-                          y={viewBox.cy}
-                          className="fill-foreground text-3xl font-bold"
-                        >
-                          R${remainingBalance.toLocaleString()}
-                        </tspan>
-                        <tspan
-                          x={viewBox.cx}
-                          y={(viewBox.cy || 0) + 24}
-                          className="fill-muted-foreground"
-                        >
-                          Saldo Restante
-                        </tspan>
-                      </text>
-                    );
-                  }
-                }}
-              />
+              {chartDataExpense?.transactions && chartDataExpense?.transactions.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.category.color} />
+              ))}
             </Pie>
-          </PieChart> */}
+          </PieChart>
         </ChartContainer>
       </CardContent>
       <CardFooter className="flex-col gap-2 text-sm">

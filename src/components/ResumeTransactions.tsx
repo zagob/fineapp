@@ -25,7 +25,5 @@ export const ResumeTransactions = () => {
     return <Loading />
   }
 
- 
-
   return <TableTransactions data={data?.transactions || []} columns={columns}  />
 };

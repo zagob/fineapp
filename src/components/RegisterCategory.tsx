@@ -23,7 +23,7 @@ import { z } from "zod";
 import * as LucideIcon from "lucide-react";
 import { ICONS_CATEGORIES_EXPENSE } from "@/variants/iconsCategories";
 import COLORS from "@/variants/colorCategories";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createCategory } from "@/actions/categories.actions";
 import { toast } from "sonner";
 
@@ -51,6 +51,8 @@ export const RegisterCategory = ({
   open,
   setOpen,
 }: RegisterCategoryProps) => {
+  const queryClient = useQueryClient()
+
   const form = useForm<FormSchemaProps>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -70,6 +72,10 @@ export const RegisterCategory = ({
     },
     onSuccess: () => {
       toast.success("Categoria criada com sucesso!");
+      queryClient.invalidateQueries({
+        queryKey: ["categories", type],
+        exact: true
+      })
       setOpen(false);
     }
   });

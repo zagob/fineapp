@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
-import { FormEvent, ForwardRefExoticComponent, useState } from "react";
+import React, { FormEvent, ForwardRefExoticComponent, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -27,14 +27,20 @@ import { Textarea } from "./ui/textarea";
 import { RegisterCategory } from "./RegisterCategory";
 import * as LucideIcon from "lucide-react";
 import { PlusIcon } from "lucide-react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getCategories } from "@/actions/categories.actions";
 import { getBanks } from "@/actions/banks.actions";
 import { createTransaction } from "@/actions/transactions.actions";
 import { Loading } from "./Loading";
 
 interface RegisterTransactionDialogProps {
+  actions?: "COPY";
   type: "INCOME" | "EXPENSE";
+  datetime?: Date;
+  bankId?: string;
+  category?: string;
+  description?: string;
+  value?: string;
 }
 
 const formSchema = z.object({
@@ -48,8 +54,16 @@ const formSchema = z.object({
 export type FormSchemaProps = z.infer<typeof formSchema>;
 
 export const RegisterTransactionDialog = ({
-  type,
+  actions,
+  type = "EXPENSE",
+  bankId,
+  category,
+  description,
+  value,
+  datetime,
 }: RegisterTransactionDialogProps) => {
+  const queryClient = useQueryClient();
+
   const { data: banks } = useQuery({
     queryKey: ["banks"],
     queryFn: async () => await getBanks(),
@@ -66,10 +80,16 @@ export const RegisterTransactionDialog = ({
   const form = useForm<FormSchemaProps>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      date: new Date(),
+      date: datetime ? new Date(datetime) : new Date(),
+      bank: bankId ?? "",
+      category: category ?? "",
+      description: description ?? "",
+      value: value ?? "",
     },
   });
-  const [date, setDate] = useState<Date>();
+  const [date, setDate] = useState<Date>(() =>
+    datetime ? new Date(datetime) : new Date()
+  );
 
   const handleOnInput = (event: FormEvent<HTMLInputElement>) => {
     const input = event.target as HTMLInputElement;
@@ -96,10 +116,18 @@ export const RegisterTransactionDialog = ({
       await createTransaction({
         bank,
         category,
+        type,
         date,
         value,
         description,
       }),
+    onSuccess: () => {
+      form.reset();
+      queryClient.invalidateQueries({
+        queryKey: ["transactions"],
+        exact: false,
+      });
+    },
   });
 
   return (
@@ -112,21 +140,39 @@ export const RegisterTransactionDialog = ({
 
       <Dialog>
         <DialogTrigger asChild>
-          {type === "INCOME" ? (
-            <Button
-              variant="outline"
-              className="dark:bg-green-300 dark:hover:bg-green-200 dark:hover:text-green-950 dark:border-green-200 dark:text-green-950"
-            >
-              Income
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              className="dark:bg-red-400 dark:hover:bg-red-300 dark:hover:text-red-50 dark:border-red-300 dark:text-red-50 "
-            >
-              Expense
-            </Button>
-          )}
+          <div>
+            {actions === undefined ? (
+              <React.Fragment>
+                {type === "INCOME" ? (
+                  <Button
+                    variant="outline"
+                    className="dark:bg-green-300 dark:hover:bg-green-200 dark:hover:text-green-950 dark:border-green-200 dark:text-green-950"
+                  >
+                    Income
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="dark:bg-red-400 dark:hover:bg-red-300 dark:hover:text-red-50 dark:border-red-300 dark:text-red-50 "
+                  >
+                    Expense
+                  </Button>
+                )}
+              </React.Fragment>
+            ) : (
+              <>
+                {actions === "COPY" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="dark:bg-transparent dark:border-neutral-700"
+                  >
+                    <LucideIcon.Copy className="size-3" />
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
         </DialogTrigger>
         <DialogContent className="bg-zinc-800 border-zinc-700">
           <DialogHeader>
@@ -149,7 +195,9 @@ export const RegisterTransactionDialog = ({
                           mode="single"
                           disableNavigation
                           selected={date}
-                          onSelect={setDate}
+                          onSelect={(selectedDate: Date | undefined) =>
+                            setDate(selectedDate ?? new Date())
+                          }
                           className="rounded-md mx-auto border border-neutral-700 text-center"
                           {...field}
                         />
