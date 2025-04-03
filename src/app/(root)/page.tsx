@@ -1,10 +1,11 @@
-import { CardValue } from "@/components/CardValue";
+
 import { FilterMonth } from "@/components/FilterMonth";
 
 import { RegisterTransactionDialog } from "@/components/RegisterTransactionDialog";
 import { ResumeAccountBanks } from "@/components/ResumeAccountBanks";
 import { ResumeChartCategories } from "@/components/resumeChartCategories";
 import { ResumeTransactions } from "@/components/ResumeTransactions";
+import { ResumeValues } from "@/components/ResumeValues";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +14,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CircleDollarSign, TrendingDown, TrendingUp } from "lucide-react";
 
 export default async function Home() {
   return (
@@ -27,19 +27,7 @@ export default async function Home() {
           })}
         </div>
 
-        <CardValue title="Balance" value="R$1.023,00" icon={CircleDollarSign} />
-        <CardValue
-          title="Income"
-          value="R$123,00"
-          icon={TrendingUp}
-          classNameIcon="text-green-300"
-        />
-        <CardValue
-          title="Expense"
-          value="R$241,00"
-          icon={TrendingDown}
-          classNameIcon="text-red-300"
-        />
+        <ResumeValues />
       </div>
 
       <div className="flex gap-8">

@@ -21,6 +21,7 @@ model User {
   accountBanks AccountBanks[]
   categories   Categories[]
   transactions Transactions[]
+  Transfers    Transfers[]
 
   @@map("users")
 }
@@ -129,4 +130,17 @@ model Transactions {
   userId String
 
   @@map("transactions")
+}
+
+model Transfers {
+  id          String   @id @default(cuid())
+  date        DateTime
+  bankInitial BankName
+  bankDestine BankName
+  value       Int
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  @@map("transfers")
 }

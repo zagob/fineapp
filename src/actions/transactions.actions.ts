@@ -5,44 +5,6 @@ import { getUserId } from "./user.actions";
 import { prisma } from "@/lib/prisma";
 import { transformToCents } from "@/lib/utils";
 
-export async function getResumeTransactions(date: Date) {
-  try {
-    const userId = await getUserId();
-
-    if (!userId) throw new Error("User ID not found");
-
-    const transactions = await prisma.transactions.findMany({
-      where: {
-        userId,
-        date: {
-
-        }
-      },
-      select: {
-        id: true,
-        date: true,
-        value: true,
-        category: {
-          select: {
-            id: true,
-            name: true,
-            color: true,
-            icon: true,
-          },
-        },
-        // bank: {
-        //   select: {
-        //     bank: true,
-        //     id: true,
-        //   },
-        // },
-      },
-    })
-  } catch (error) {
-    return { success: false, error };
-  }
-}
-
 export async function getTypeTransactions(type: "INCOME" | "EXPENSE") {
   try {
     const userId = await getUserId();
@@ -175,13 +137,10 @@ export async function getTransactions({ date }: { date: Date }) {
       totalExpense: 0
     })
 
-    console.log({
-      transactionsFormatted
-    })
-
     return {
       success: true,
       transactions,
+      resume: transactionsFormatted
     };
   } catch (error) {
     console.log(error);

@@ -1,14 +1,11 @@
 import {
   NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuIndicator,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
-  NavigationMenuViewport,
 } from "@/components/ui/navigation-menu";
 import Link from "next/link";
+import { Categories } from "./Categories";
 
 export const Menu = () => {
   return (
@@ -44,6 +41,10 @@ export const Menu = () => {
               Transfers
             </NavigationMenuLink>
           </Link>
+        </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          <Categories />
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
