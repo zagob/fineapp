@@ -20,3 +20,17 @@ export const ACCOUNT_BANKS = Object.freeze({
     color: "",
   },
 });
+
+
+export const BANKS = [
+  "BANCO_DO_BRASIL",
+  "ITAU",
+  "ITI",
+  "PICPAY",
+  "NUBANK",
+  "BRADESCO",
+  "SANTANDER",
+  "CAIXA",
+  "INTER",
+  "C6",
+] as const;

@@ -15,3 +15,17 @@ export function transformToCurrency(value: number) {
     currency: "BRL",
   }).format(value / 100);
 }
+
+export function getFirstAndLastDayOfMonth(date: Date) {
+  const firstDayOfLastMonth = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), 1, 0, 0, 0)
+  );
+  const lastDayOfLastMonth = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59)
+  );
+
+  return {
+    firstDayOfLastMonth,
+    lastDayOfLastMonth,
+  };
+}

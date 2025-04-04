@@ -1,10 +1,11 @@
-
 import { FilterMonth } from "@/components/FilterMonth";
 
 import { RegisterTransactionDialog } from "@/components/RegisterTransactionDialog";
+import { RegisterTransfer } from "@/components/RegisterTransfer";
 import { ResumeAccountBanks } from "@/components/ResumeAccountBanks";
 import { ResumeChartCategories } from "@/components/resumeChartCategories";
 import { ResumeTransactions } from "@/components/ResumeTransactions";
+import { ResumeTransfers } from "@/components/ResumeTransfers";
 import { ResumeValues } from "@/components/ResumeValues";
 
 import { Button } from "@/components/ui/button";
@@ -33,30 +34,47 @@ export default async function Home() {
       <div className="flex gap-8">
         <ResumeAccountBanks />
 
-        <Card className="flex-1 bg-transparent text-zinc-50 border-neutral-800">
-          <CardHeader className="px-2">
-            <CardTitle className="p-0 flex items-center justify-between">
-              <h2>Lastest Transactions</h2>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="default" className="cursor-pointer">
-                    Add Transaction
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  align="end"
-                  className="w-fit flex flex-col gap-2 dark:bg-neutral-700 dark:border-neutral-600"
-                >
-                  <RegisterTransactionDialog type="EXPENSE" />
-                  <RegisterTransactionDialog type="INCOME" />
-                </PopoverContent>
-              </Popover>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <ResumeTransactions />
-          </CardContent>
-        </Card>
+        <div className="flex-1 space-y-8">
+          <Card className="flex-1 bg-transparent text-zinc-50 border-neutral-800">
+            <CardHeader className="px-2">
+              <CardTitle className="p-0 flex items-center justify-between">
+                <h2>Lastest Transactions</h2>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="default" className="cursor-pointer">
+                      Add Transaction
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    className="w-fit flex flex-col gap-2 dark:bg-neutral-700 dark:border-neutral-600"
+                  >
+                    <RegisterTransactionDialog type="EXPENSE" />
+                    <RegisterTransactionDialog type="INCOME" />
+                  </PopoverContent>
+                </Popover>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <ResumeTransactions />
+            </CardContent>
+          </Card>
+
+          <Card className="flex-1 bg-transparent text-zinc-50 border-neutral-800">
+            <CardHeader className="px-2">
+              <CardTitle className="p-0 flex items-center justify-between">
+                <div>
+                  <h2>Lastest Transfers</h2>
+                </div>
+
+                <RegisterTransfer />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <ResumeTransfers />
+            </CardContent>
+          </Card>
+        </div>
 
         <ResumeChartCategories />
       </div>

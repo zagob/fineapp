@@ -92,6 +92,9 @@ model AccountBanks {
   user         User           @relation(fields: [userId], references: [id])
   Transactions Transactions[]
 
+  TransfersBankInitial Transfers[] @relation("BankInitial")
+  TransfersBankDestine Transfers[] @relation("BankDestine")
+
   @@map("account_banks")
 }
 
@@ -133,11 +136,14 @@ model Transactions {
 }
 
 model Transfers {
-  id          String   @id @default(cuid())
-  date        DateTime
-  bankInitial BankName
-  bankDestine BankName
-  value       Int
+  id            String   @id @default(cuid())
+  date          DateTime
+  bankInitialId String
+  bankDestineId String
+  value         Int
+
+  bankInitial AccountBanks @relation(name: "BankInitial", fields: [bankInitialId], references: [id])
+  bankDestine AccountBanks @relation(name: "BankDestine", fields: [bankDestineId], references: [id])
 
   user   User   @relation(fields: [userId], references: [id])
   userId String

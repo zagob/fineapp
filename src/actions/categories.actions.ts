@@ -72,8 +72,13 @@ interface UpdateCategoryProps {
 
 export async function updateCategory(id: string, data: UpdateCategoryProps) {
   try {
+    const userId = await getUserId();
+
+    if (!userId) throw new Error("User ID not found");
+
     await prisma.categories.update({
       where: {
+        userId,
         id,
       },
       data,

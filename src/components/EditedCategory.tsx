@@ -6,6 +6,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "./ui/button";
 import {
@@ -24,8 +25,9 @@ import * as LucideIcon from "lucide-react";
 import { ICONS_CATEGORIES_EXPENSE } from "@/variants/iconsCategories";
 import COLORS from "@/variants/colorCategories";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createCategory } from "@/actions/categories.actions";
+import { updateCategory } from "@/actions/categories.actions";
 import { toast } from "sonner";
+import { useState } from "react";
 
 const iconNames = Object.keys(
   ICONS_CATEGORIES_EXPENSE
@@ -35,50 +37,40 @@ const formSchema = z.object({
   name: z.string(),
   icon: z.string(),
   color: z.string(),
-  value: z.string(),
 });
 
 type FormSchemaProps = z.infer<typeof formSchema>;
 
-interface RegisterCategoryProps {
+type DefaultValuesProps = FormSchemaProps & {
+  id: string;
+};
+
+interface EditedCategoryProps {
   type: "INCOME" | "EXPENSE";
-  action?: "CREATED" | "EDITED";
-  defaultValues?: FormSchemaProps;
-  open: boolean;
-  setOpen: (open: boolean) => void;
+  defaultValues: DefaultValuesProps;
 }
 
-export const RegisterCategory = ({
-  action = "CREATED",
+export const EditedCategory = ({
   defaultValues,
   type,
-  open,
-  setOpen,
-}: RegisterCategoryProps) => {
+}: EditedCategoryProps) => {
+  const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const form = useForm<FormSchemaProps>({
     resolver: zodResolver(formSchema),
-    defaultValues:
-      action === "EDITED"
-        ? defaultValues
-        : {
-            name: "",
-            icon: "",
-            color: "",
-            value: "",
-          },
+    defaultValues,
   });
 
   const { mutate: handleSubmitForm, isPending } = useMutation({
     mutationFn: async (data: FormSchemaProps) => {
-      await createCategory({
+      await updateCategory(defaultValues.id, {
         ...data,
         typeaccount: type,
       });
     },
     onSuccess: () => {
-      toast.success("Categoria criada com sucesso!");
+      toast.success("Categoria editada com sucesso!");
       queryClient.invalidateQueries({
         queryKey: ["categories", type],
         exact: true,
@@ -93,13 +85,18 @@ export const RegisterCategory = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="icon">
+          <LucideIcon.Edit2 />
+        </Button>
+      </DialogTrigger>
       <DialogContent className="bg-zinc-800 border-zinc-700 w-[300px]">
         <DialogHeader>
           <DialogTitle>Categoria</DialogTitle>
           <DialogDescription asChild>
             <Form {...form}>
               <form
-                id="createCategory"
+                id="editedCategory"
                 onSubmit={form.handleSubmit((data) => handleSubmitForm(data))}
                 className="flex flex-col items-center gap-2"
               >
@@ -221,16 +218,12 @@ export const RegisterCategory = ({
                       disabled={isPending}
                       className="w-full"
                       type="submit"
-                      form="createCategory"
+                      form="editedCategory"
                     >
                       {isPending ? (
                         <LucideIcon.Loader2 className="mr-2 animate-spin" />
                       ) : (
-                        <>
-                          {action === "EDITED"
-                            ? "Editar Categoria"
-                            : "Criar Categoria"}
-                        </>
+                        "Editar Categoria"
                       )}
                     </Button>
                   </div>
