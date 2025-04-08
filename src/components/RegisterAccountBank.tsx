@@ -10,13 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "./ui/button";
 import { FormEvent, useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
 import { Input } from "./ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "./ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,8 +21,7 @@ import { transformToCents } from "@/lib/utils";
 import { Loading } from "./Loading";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
-import Image from "next/image";
-import { bankIcons } from "@/variants/accountBanks";
+import { FieldSelectBanks } from "./FieldSelectBanks";
 
 const banks = [
   "BANCO_DO_BRASIL",
@@ -105,7 +97,6 @@ export const RegisterAccountBank = () => {
       <DialogTrigger asChild>
         <Button className="flex w-full cursor-pointer flex-col leading-0 items-center justify-center min-h-full">
           <Plus className="size-8 text-zinc-600 " strokeWidth={1} />
-          {/* <span className="text-zinc-600">Adicionar primeiro banco</span> */}
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-zinc-800 border-zinc-700 w-[300px]">
@@ -121,41 +112,11 @@ export const RegisterAccountBank = () => {
               >
                 <div className="flex gap-4 w-full">
                   <div className="flex flex-col gap-4 w-full">
-                    <FormField
-                      control={form.control}
+                    <FieldSelectBanks 
                       name="bank"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome:</FormLabel>
-                          <FormControl>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <SelectTrigger className="dark:text-neutral-200 w-full dark:hover:bg-neutral-900 dark:bg-neutral-900 dark:border-neutral-700">
-                                <SelectValue placeholder="Select a bank" />
-                              </SelectTrigger>
-                              <SelectContent className="dark:bg-neutral-400 border-none">
-                                {banks.map((bank) => (
-                                  <SelectItem key={bank} value={bank}>
-                                    <Image
-                                      src={
-                                        bankIcons[bank] ||
-                                        "../assets/icons/default.svg"
-                                      }
-                                      alt={bank}
-                                      width={20}
-                                      height={20}
-                                      className="rounded-sm"
-                                    />
-                                    {bank}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                        </FormItem>
-                      )}
+                      control={form.control}
+                      banks={[...banks].map(bank => ({id: bank, name: bank}))}
+                      label="Banco"
                     />
 
                     <FormField

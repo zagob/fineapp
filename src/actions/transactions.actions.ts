@@ -121,26 +121,50 @@ export async function getTransactions({ date }: { date: Date }) {
       },
     });
 
-    const transactionsFormatted = transactions.reduce((acc, transaction) => {
-      if(transaction.type === "INCOME") {
-        acc.totalIncome += transaction.value;
-        acc.balance += transaction.value;
-      } else {
-        acc.totalExpense += transaction.value;
-        acc.balance -= transaction.value;
-      }
+    const groupedTransactions = transactions.reduce(
+      (acc: { [key: string]: typeof transactions }, transaction) => {
+        const dateKey = transaction.date.toISOString().split("T")[0];
 
-      return acc
-    }, {
-      balance: 0,
-      totalIncome: 0,
-      totalExpense: 0
-    })
+        if (!acc[dateKey]) {
+          acc[dateKey] = [];
+        }
+
+        acc[dateKey].push(transaction);
+
+        return acc;
+      },
+      {} as { [key: string]: typeof transactions }
+    );
+
+    const transactionsByDate = Object.entries(groupedTransactions).map(([date, transactions]) => ({
+      date,
+      transactions
+    }))
+
+    const transactionsFormatted = transactions.reduce(
+      (acc, transaction) => {
+        if (transaction.type === "INCOME") {
+          acc.totalIncome += transaction.value;
+          acc.balance += transaction.value;
+        } else {
+          acc.totalExpense += transaction.value;
+          acc.balance -= transaction.value;
+        }
+
+        return acc;
+      },
+      {
+        balance: 0,
+        totalIncome: 0,
+        totalExpense: 0,
+      }
+    );
 
     return {
       success: true,
       transactions,
-      resume: transactionsFormatted
+      resume: transactionsFormatted,
+      transactionsByDate
     };
   } catch (error) {
     console.log(error);

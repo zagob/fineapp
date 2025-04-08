@@ -52,7 +52,7 @@ export const createTransfer = async ({
 
     if (!userId) throw new Error("User ID not found");
 
-    const transfer = await prisma.transfers.create({
+    const t = await prisma.transfers.create({
       data: {
         userId,
         date,
@@ -62,7 +62,7 @@ export const createTransfer = async ({
       },
     });
 
-    if(!transfer) throw new Error("Transfer not created");
+    console.log('t', t)
 
     await prisma.accountBanks.update({
       where: {

@@ -12,8 +12,7 @@ import {
 } from "./ui/tooltip";
 import { RegisterTransactionDialog } from "./RegisterTransactionDialog";
 import { DialogDeleteTransaction } from "./DialogDeleteTransaction";
-import Image from "next/image";
-import { bankIcons } from "@/variants/accountBanks";
+import { ImageBank } from "./ImageBank";
 
 export type Transaction = {
   id: string;
@@ -38,7 +37,7 @@ export type Transaction = {
 
 export const columns: ColumnDef<Transaction>[] = [
   {
-    header: "Date",
+    header: "Data",
     cell: ({ row }) => (
       <span>
         {row.original.date.toLocaleDateString("pt-BR", {
@@ -50,20 +49,13 @@ export const columns: ColumnDef<Transaction>[] = [
     ),
   },
   {
-    header: "Bank",
+    header: "Banco",
     cell: ({ row }) => (
-      <Image
-        src={bankIcons[row.original.bank.bank as keyof typeof bankIcons]}
-        alt={row.original.bank.bank}
-        width={30}
-        height={30}
-        className="rounded border-neutral-600"
-      />
+      <ImageBank bank={row.original.bank.bank} width={28} height={28} />
     ),
-    // cell: ({ row }) => <span>{row.original.bank.bank}</span>,
   },
   {
-    header: "Type",
+    header: "Tipo",
     accessorKey: "type",
     cell: ({ row }) => {
       return (
@@ -79,7 +71,7 @@ export const columns: ColumnDef<Transaction>[] = [
     },
   },
   {
-    header: "Category",
+    header: "Categoria",
     cell: ({ row }) => {
       const IconComponent =
         ICONS_CATEGORIES_EXPENSE[
@@ -104,7 +96,17 @@ export const columns: ColumnDef<Transaction>[] = [
     },
   },
   {
-    header: "Value",
+    header: 'Descrição',
+    cell: ({ row }) => {
+      return (
+        <span className="text-sm text-neutral-400">
+          {row.original.description ?? ""}
+        </span>
+      );
+    }
+  },
+  {
+    header: "Valor",
     cell: ({ row }) => transformToCurrency(row.original.value),
   },
   {

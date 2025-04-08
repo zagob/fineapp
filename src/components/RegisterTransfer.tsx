@@ -9,37 +9,40 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "./ui/button";
-import { Calendar } from "./ui/calendar";
-import React, { FormEvent, useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
+import React, { FormEvent } from "react";
 import { Input } from "./ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "./ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "./ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-// import { Textarea } from "./ui/textarea";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-// import { getCategories } from "@/actions/categories.actions";
 import { getBanks } from "@/actions/banks.actions";
 import { Loading } from "./Loading";
 import { useDateStore } from "@/store";
 import { createTransfer } from "@/actions/transfers.actions";
-// import { BANKS } from "@/variants/accountBanks";
 import { PlusCircle } from "lucide-react";
+import { CalendarInput } from "./CalendarInput";
+import { FieldSelectBanks } from "./FieldSelectBanks";
+import { toast } from "sonner";
 
-const formSchema = z.object({
-  date: z.date(),
-  bankInitial: z.string(),
-  bankDestine: z.string(),
-  // description: z.string().optional(),
-  value: z.string(),
-});
+const formSchema = z
+  .object({
+    date: z.date({ message: "É necessário uma data" }),
+    bankInitial: z.string({ message: "É necessário um banco" }),
+    bankDestine: z.string({ message: "É necessário um banco" }),
+    value: z.string({ message: "É necessário um valor" }),
+  })
+  .refine((data) => data.bankInitial !== data.bankDestine, {
+    message: "Os bancos precisam ser diferentes",
+    path: ["bankDestine"],
+  });
 
 export type FormSchemaProps = z.infer<typeof formSchema>;
 
@@ -54,20 +57,21 @@ export const RegisterTransfer = () => {
     staleTime: 1000,
   });
 
+  const banksName =
+    banks?.banks.map((bank) => ({
+      id: bank.id,
+      name: bank.bank,
+    })) ?? [];
+
   const form = useForm<FormSchemaProps>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       date: dateTimeStore,
       bankInitial: "",
       bankDestine: "",
-      // description: "",
       value: "",
     },
   });
-
-  console.log(form.formState.errors);
-
-  const [date, setDate] = useState<Date>(dateTimeStore);
 
   const handleOnInput = (event: FormEvent<HTMLInputElement>) => {
     const input = event.target as HTMLInputElement;
@@ -89,17 +93,29 @@ export const RegisterTransfer = () => {
       bankDestine,
       date,
       value,
-    }: FormSchemaProps) =>
+    }: FormSchemaProps) => {
+      console.log("create", {
+        bankInitial,
+        bankDestine,
+        date,
+        value,
+      });
       await createTransfer({
         bankInitial,
         bankDestine,
         date,
         value,
-      }),
+      });
+    },
     onSuccess: () => {
+      toast.success("Transferência criada com sucesso!");
       form.reset();
       queryClient.invalidateQueries({
         queryKey: ["transactions"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["banks"],
         exact: false,
       });
     },
@@ -116,7 +132,7 @@ export const RegisterTransfer = () => {
         </DialogTrigger>
         <DialogContent className="bg-zinc-800 border-zinc-700">
           <DialogHeader>
-            <DialogTitle>Add Transfer</DialogTitle>
+            <DialogTitle>Transferência</DialogTitle>
             <DialogDescription asChild>
               <Form {...form}>
                 <form
@@ -126,97 +142,22 @@ export const RegisterTransfer = () => {
                   className="flex flex-col gap-2"
                 >
                   <div className="flex gap-4">
-                    <FormField
-                      control={form.control}
-                      name="date"
-                      render={({ field }) => (
-                        <Calendar
-                          mode="single"
-                          disableNavigation
-                          selected={date}
-                          onSelect={(selectedDate: Date | undefined) =>
-                            setDate(selectedDate ?? new Date())
-                          }
-                          className="rounded-md mx-auto border border-neutral-700 text-center"
-                          {...field}
-                        />
-                      )}
-                    />
+                    <CalendarInput name="date" control={form.control} />
 
                     <div className="flex flex-col gap-4">
-                      <FormField
-                        control={form.control}
+                      <FieldSelectBanks
                         name="bankInitial"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Bank Initial:</FormLabel>
-                            <FormControl>
-                              <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                              >
-                                <SelectTrigger className="dark:text-neutral-200 w-full dark:hover:bg-neutral-900 dark:bg-neutral-900 dark:border-neutral-700">
-                                  <SelectValue placeholder="Select a bank" />
-                                </SelectTrigger>
-                                <SelectContent className="dark:bg-neutral-400 border-none">
-                                  {banks?.banks.map((bank) => {
-                                    return (
-                                      <SelectItem key={bank.id} value={bank.id}>
-                                        {bank.bank}
-                                      </SelectItem>
-                                    );
-                                  })}
-                                </SelectContent>
-                              </Select>
-                            </FormControl>
-                          </FormItem>
-                        )}
+                        label="Banco Saída"
+                        control={form.control}
+                        banks={banksName}
                       />
 
-                      <FormField
-                        control={form.control}
+                      <FieldSelectBanks
                         name="bankDestine"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Bank Destine:</FormLabel>
-                            <FormControl>
-                              <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                              >
-                                <SelectTrigger className="dark:text-neutral-200 w-full dark:hover:bg-neutral-900 dark:bg-neutral-900 dark:border-neutral-700">
-                                  <SelectValue placeholder="Select a bank" />
-                                </SelectTrigger>
-                                <SelectContent className="dark:bg-neutral-400 border-none">
-                                  {banks?.banks.map((bank) => {
-                                    return (
-                                      <SelectItem key={bank.id} value={bank.id}>
-                                        {bank.bank}
-                                      </SelectItem>
-                                    );
-                                  })}
-                                </SelectContent>
-                              </Select>
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* <FormField
+                        label="Banco Destino"
                         control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Description:</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                className="resize-none dark:bg-neutral-900 dark:border-neutral-700"
-                                {...field}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      /> */}
+                        banks={banksName}
+                      />
 
                       <FormField
                         control={form.control}
@@ -235,6 +176,7 @@ export const RegisterTransfer = () => {
                                 value={field.value ?? ""}
                               />
                             </FormControl>
+                            <FormMessage />
                           </FormItem>
                         )}
                       />
@@ -242,7 +184,7 @@ export const RegisterTransfer = () => {
                   </div>
 
                   <Button disabled={isPending} type="submit">
-                    {isPending ? <Loading /> : "Register Transfer"}
+                    {isPending ? <Loading /> : "Registrar Transferência"}
                   </Button>
                 </form>
               </Form>

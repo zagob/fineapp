@@ -1,6 +1,6 @@
 "use client";
 
-import { EyeIcon } from "lucide-react";
+import { EyeClosedIcon, EyeIcon } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -14,8 +14,12 @@ import { RegisterAccountBank } from "./RegisterAccountBank";
 import { useQuery } from "@tanstack/react-query";
 import { getBanks } from "@/actions/banks.actions";
 import { transformToCurrency } from "@/lib/utils";
+import { Button } from "./ui/button";
+import { useState } from "react";
 
 export function ResumeAccountBanks() {
+  const [isAmountVisible, setIsAmountVisible] = useState(true);
+
   const { data } = useQuery({
     queryKey: ["banks"],
     queryFn: async () => await getBanks(),
@@ -28,12 +32,27 @@ export function ResumeAccountBanks() {
           <div className="flex flex-col gap-1">
             <CardTitle>Bancos</CardTitle>
             <CardDescription>
-              {data?.totalAmount
-                ? transformToCurrency(data.totalAmount)
-                : "R$0,00"}
+              {isAmountVisible ? (
+                <>
+                  {data?.totalAmount
+                    ? transformToCurrency(data.totalAmount)
+                    : "R$0,00"}
+                </>
+              ) : (
+                <div className="h-px w-4" />
+              )}
             </CardDescription>
           </div>
-          <EyeIcon className="size-5 text-neutral-500" />
+          <Button
+            className="cursor-pointer"
+            onClick={() => setIsAmountVisible(!isAmountVisible)}
+          >
+            {isAmountVisible ? (
+              <EyeIcon className="size-5 text-neutral-500" />
+            ) : (
+              <EyeClosedIcon className="size-5 text-neutral-500" />
+            )}
+          </Button>
         </CardHeader>
 
         <CardContent className="p-0 flex-1 overflow-auto">
@@ -45,6 +64,7 @@ export function ResumeAccountBanks() {
                 title={bank.bank}
                 type_account={bank.description}
                 value={transformToCurrency(bank.amount)}
+                isAmountVisible={isAmountVisible}
               />
             ))}
         </CardContent>

@@ -11,6 +11,7 @@ interface CardContentAccountBankProps {
   type_account: string;
   value: string;
   bankId: string;
+  isAmountVisible: boolean;
 }
 
 export const CardContentAccountBank = ({
@@ -18,6 +19,7 @@ export const CardContentAccountBank = ({
   type_account,
   value,
   bankId,
+  isAmountVisible,
 }: CardContentAccountBankProps) => {
   const [open, setOpen] = useState(false);
 
@@ -37,7 +39,6 @@ export const CardContentAccountBank = ({
         className="flex relative items-center justify-between border-b border-neutral-800 px-4 py-4 w-full"
       >
         <div className="flex items-center gap-2">
-          {/* <div className="bg-orange-400 rounded-full size-10" /> */}
           <Image
             src={bankIcons[title]}
             width={40}
@@ -50,7 +51,13 @@ export const CardContentAccountBank = ({
             <span className="text-xs text-neutral-500">{type_account}</span>
           </div>
         </div>
-        <span>{value}</span>
+
+        {isAmountVisible ? (
+          <span>{value}</span>
+        ) : (
+          <div className="h-px w-4 bg-neutral-200" />
+        )}
+
         <X className="size-4 absolute top-2 right-1 text-zinc-600" />
       </div>
     </>

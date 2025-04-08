@@ -9,7 +9,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "./ui/button";
-import { Calendar } from "./ui/calendar";
 import React, { FormEvent, ForwardRefExoticComponent, useState } from "react";
 import {
   Select,
@@ -32,6 +31,8 @@ import { getCategories } from "@/actions/categories.actions";
 import { getBanks } from "@/actions/banks.actions";
 import { createTransaction } from "@/actions/transactions.actions";
 import { Loading } from "./Loading";
+import { CalendarInput } from "./CalendarInput";
+import { FieldSelectBanks } from "./FieldSelectBanks";
 
 interface RegisterTransactionDialogProps {
   actions?: "COPY";
@@ -87,9 +88,6 @@ export const RegisterTransactionDialog = ({
       value: value ?? "",
     },
   });
-  const [date, setDate] = useState<Date>(() =>
-    datetime ? new Date(datetime) : new Date()
-  );
 
   const handleOnInput = (event: FormEvent<HTMLInputElement>) => {
     const input = event.target as HTMLInputElement;
@@ -145,17 +143,21 @@ export const RegisterTransactionDialog = ({
               <React.Fragment>
                 {type === "INCOME" ? (
                   <Button
-                    variant="outline"
-                    className="dark:bg-green-300 dark:hover:bg-green-200 dark:hover:text-green-950 dark:border-green-200 dark:text-green-950"
+                    variant="dark"
+                    size="sm"
+                    className="flex cursor-pointer items-center justify-center shadow-xl dark:bg-emerald-900 dark:border-emerald-800"
                   >
-                    Income
+                    <LucideIcon.Banknote className="size-5" />
+                    Entrada
                   </Button>
                 ) : (
                   <Button
-                    variant="outline"
-                    className="dark:bg-red-400 dark:hover:bg-red-300 dark:hover:text-red-50 dark:border-red-300 dark:text-red-50 "
+                    variant="dark"
+                    size="sm"
+                    className="flex cursor-pointer items-center justify-center shadow-xl dark:bg-red-900 dark:border-red-800"
                   >
-                    Expense
+                    <LucideIcon.Banknote className="size-5" />
+                    Saída
                   </Button>
                 )}
               </React.Fragment>
@@ -187,51 +189,19 @@ export const RegisterTransactionDialog = ({
                   className="flex flex-col gap-2"
                 >
                   <div className="flex gap-4">
-                    <FormField
-                      control={form.control}
-                      name="date"
-                      render={({ field }) => (
-                        <Calendar
-                          mode="single"
-                          disableNavigation
-                          selected={date}
-                          onSelect={(selectedDate: Date | undefined) =>
-                            setDate(selectedDate ?? new Date())
-                          }
-                          className="rounded-md mx-auto border border-neutral-700 text-center"
-                          {...field}
-                        />
-                      )}
-                    />
+                    <CalendarInput name="date" control={form.control} />
 
                     <div className="flex flex-col gap-4">
-                      <FormField
-                        control={form.control}
+                      <FieldSelectBanks
                         name="bank"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Bank:</FormLabel>
-                            <FormControl>
-                              <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                              >
-                                <SelectTrigger className="dark:text-neutral-200 w-full dark:hover:bg-neutral-900 dark:bg-neutral-900 dark:border-neutral-700">
-                                  <SelectValue placeholder="Select a bank" />
-                                </SelectTrigger>
-                                <SelectContent className="dark:bg-neutral-400 border-none">
-                                  {banks?.banks.map((bank) => {
-                                    return (
-                                      <SelectItem key={bank.id} value={bank.id}>
-                                        {bank.bank}
-                                      </SelectItem>
-                                    );
-                                  })}
-                                </SelectContent>
-                              </Select>
-                            </FormControl>
-                          </FormItem>
-                        )}
+                        control={form.control}
+                        banks={
+                          banks?.banks.map((bank) => ({
+                            id: bank.id,
+                            name: bank.bank,
+                          })) ?? []
+                        }
+                        label="Banco"
                       />
 
                       <div className="flex items-end gap-1">
