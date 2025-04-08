@@ -86,8 +86,8 @@ export const EditedCategory = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon">
-          <LucideIcon.Edit2 />
+        <Button size="icon" className="border-none bg-transparent">
+          <LucideIcon.Edit2 className="text-neutral-400 size-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-zinc-800 border-zinc-700 w-[300px]">

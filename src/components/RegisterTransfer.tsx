@@ -62,10 +62,10 @@ export const RegisterTransfer = () => {
       bankDestine: "",
       // description: "",
       value: "",
-    }
+    },
   });
 
-  console.log(form.formState.errors)
+  console.log(form.formState.errors);
 
   const [date, setDate] = useState<Date>(dateTimeStore);
 
@@ -109,9 +109,9 @@ export const RegisterTransfer = () => {
     <>
       <Dialog>
         <DialogTrigger asChild>
-          <Button>
+          <Button variant="dark" size="sm">
             <PlusCircle className="mr-2" />
-            Add Transfer
+            Adicionar Transferência
           </Button>
         </DialogTrigger>
         <DialogContent className="bg-zinc-800 border-zinc-700">
@@ -241,10 +241,7 @@ export const RegisterTransfer = () => {
                     </div>
                   </div>
 
-                  <Button
-                    disabled={isPending}
-                    type="submit"
-                  >
+                  <Button disabled={isPending} type="submit">
                     {isPending ? <Loading /> : "Register Transfer"}
                   </Button>
                 </form>

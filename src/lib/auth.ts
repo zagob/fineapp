@@ -12,7 +12,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientId: process.env.NEXT_GOOGLE_CLIENT_ID,
       clientSecret: process.env.NEXT_GOOGLE_CLIENT_SECRET,
       async profile(profile) {
-        return { ...profile };
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          emailVerified: profile.email_verified ? new Date() : null,
+        };
       },
     }),
   ],

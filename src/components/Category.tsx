@@ -21,19 +21,19 @@ export const Category = ({ category }: CategoryProps) => {
 
   return (
     <div
-      className="flex items-center justify-between border px-2 py-3 rounded border-zinc-500"
+      className="flex items-center justify-between py-1 border-b border-b-neutral-800"
       key={category.id}
     >
       <div className="flex items-center gap-2">
         <div
-          className="flex items-center gap-2 justify-center size-6 rounded-full"
+          className="flex items-center justify-center size-7 rounded-full border border-neutral-600"
           style={{
             backgroundColor: category.color,
           }}
         >
-          <IconComponent className="text-zinc-50" strokeWidth={1} />
+          <IconComponent className="text-zinc-50 size-4" strokeWidth={2} />
         </div>
-        <span className="text-zinc-50">{category.name}</span>
+        <span className="text-zinc-400">{category.name}</span>
       </div>
 
       <EditedCategory

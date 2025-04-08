@@ -12,6 +12,8 @@ import {
 } from "./ui/tooltip";
 import { RegisterTransactionDialog } from "./RegisterTransactionDialog";
 import { DialogDeleteTransaction } from "./DialogDeleteTransaction";
+import Image from "next/image";
+import { bankIcons } from "@/variants/accountBanks";
 
 export type Transaction = {
   id: string;
@@ -49,7 +51,16 @@ export const columns: ColumnDef<Transaction>[] = [
   },
   {
     header: "Bank",
-    cell: ({ row }) => <span>{row.original.bank.bank}</span>,
+    cell: ({ row }) => (
+      <Image
+        src={bankIcons[row.original.bank.bank as keyof typeof bankIcons]}
+        alt={row.original.bank.bank}
+        width={30}
+        height={30}
+        className="rounded border-neutral-600"
+      />
+    ),
+    // cell: ({ row }) => <span>{row.original.bank.bank}</span>,
   },
   {
     header: "Type",
@@ -58,13 +69,11 @@ export const columns: ColumnDef<Transaction>[] = [
       return (
         <span
           className={cn(
-            "rounded px-2 text-xs",
-            row.original.type === "EXPENSE"
-              ? "bg-red-500"
-              : "bg-green-600"
+            "rounded px-2 text-sm font-semibold backdrop-blur-sm bg-opacity-10 text-white",
+            row.original.type === "EXPENSE" ? "bg-red-500" : "bg-green-600"
           )}
         >
-          {row.original.type}
+          {row.original.type === "EXPENSE" ? "Saída" : "Entrada"}
         </span>
       );
     },

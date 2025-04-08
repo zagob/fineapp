@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { CircleDollarSign, TrendingDown, TrendingUp } from "lucide-react";
 import { CardValue } from "./CardValue";
@@ -18,19 +18,28 @@ export const ResumeValues = () => {
   return (
     <>
       <CardValue
-        title="Balance"
-        value={transformToCurrency(transactions?.resume?.balance as number) ?? "R$0,00"}
+        title="Balanço"
+        value={
+          transformToCurrency(transactions?.resume?.balance as number) ??
+          "R$0,00"
+        }
         icon={CircleDollarSign}
       />
       <CardValue
-        title="Income"
-        value={transformToCurrency(transactions?.resume?.totalIncome as number) ?? "R$0,00"}
+        title="Entrada"
+        value={
+          transformToCurrency(transactions?.resume?.totalIncome as number) ??
+          "R$0,00"
+        }
         icon={TrendingUp}
         classNameIcon="text-green-300"
       />
       <CardValue
-        title="Expense"
-        value={transformToCurrency(transactions?.resume?.totalExpense as number) ?? "R$0,00"}
+        title="Saída"
+        value={
+          transformToCurrency(transactions?.resume?.totalExpense as number) ??
+          "R$0,00"
+        }
         icon={TrendingDown}
         classNameIcon="text-red-300"
       />

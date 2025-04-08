@@ -27,6 +27,9 @@ import { createBank } from "@/actions/banks.actions";
 import { transformToCents } from "@/lib/utils";
 import { Loading } from "./Loading";
 import { toast } from "sonner";
+import { Plus } from "lucide-react";
+import Image from "next/image";
+import { bankIcons } from "@/variants/accountBanks";
 
 const banks = [
   "BANCO_DO_BRASIL",
@@ -50,8 +53,8 @@ const formSchema = z.object({
 type FormSchemaProps = z.infer<typeof formSchema>;
 
 export const RegisterAccountBank = () => {
-  const queryClient = useQueryClient()
-  const [isOpen, setIsOpen] = useState(false)
+  const queryClient = useQueryClient();
+  const [isOpen, setIsOpen] = useState(false);
   const form = useForm<FormSchemaProps>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -84,27 +87,25 @@ export const RegisterAccountBank = () => {
       });
     },
     onSuccess: (data) => {
-      console.log('data', data)
+      console.log("data", data);
 
-      if(!data) return toast.error('Erro ao criar banco')
+      if (!data) return toast.error("Erro ao criar banco");
 
       toast.success("Banco criado com sucesso!");
 
       queryClient.invalidateQueries({
-        queryKey: ['banks']
-      })
-      setIsOpen(false)
-    }
+        queryKey: ["banks"],
+      });
+      setIsOpen(false);
+    },
   });
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          className="w-full dark:bg-neutral-700 dark:border-neutral-600"
-        >
-          Add Bank
+        <Button className="flex w-full cursor-pointer flex-col leading-0 items-center justify-center min-h-full">
+          <Plus className="size-8 text-zinc-600 " strokeWidth={1} />
+          {/* <span className="text-zinc-600">Adicionar primeiro banco</span> */}
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-zinc-800 border-zinc-700 w-[300px]">
@@ -118,14 +119,14 @@ export const RegisterAccountBank = () => {
                 )}
                 className="flex flex-col items-center gap-2"
               >
-                <div className="flex gap-4">
-                  <div className="flex flex-col gap-4">
+                <div className="flex gap-4 w-full">
+                  <div className="flex flex-col gap-4 w-full">
                     <FormField
                       control={form.control}
                       name="bank"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Account Bank:</FormLabel>
+                          <FormLabel>Nome:</FormLabel>
                           <FormControl>
                             <Select
                               onValueChange={field.onChange}
@@ -137,6 +138,16 @@ export const RegisterAccountBank = () => {
                               <SelectContent className="dark:bg-neutral-400 border-none">
                                 {banks.map((bank) => (
                                   <SelectItem key={bank} value={bank}>
+                                    <Image
+                                      src={
+                                        bankIcons[bank] ||
+                                        "../assets/icons/default.svg"
+                                      }
+                                      alt={bank}
+                                      width={20}
+                                      height={20}
+                                      className="rounded-sm"
+                                    />
                                     {bank}
                                   </SelectItem>
                                 ))}
@@ -152,7 +163,7 @@ export const RegisterAccountBank = () => {
                       name="description"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Type account:</FormLabel>
+                          <FormLabel>Tipo:</FormLabel>
                           <FormControl>
                             <Input
                               className="dark:bg-neutral-900 dark:border-neutral-700"
@@ -169,7 +180,7 @@ export const RegisterAccountBank = () => {
                       name="amount"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Value:</FormLabel>
+                          <FormLabel>Valor:</FormLabel>
                           <FormControl>
                             <Input
                               className="dark:bg-neutral-900 dark:border-neutral-700"
@@ -181,12 +192,17 @@ export const RegisterAccountBank = () => {
                         </FormItem>
                       )}
                     />
+
+                    <Button
+                      disabled={isPending}
+                      type="submit"
+                      className="w-full"
+                      size="lg"
+                    >
+                      {isPending ? <Loading /> : "Criar"}
+                    </Button>
                   </div>
                 </div>
-
-                <Button disabled={isPending} type="submit">
-                  {isPending ? <Loading /> : "Register Bank"}
-                </Button>
               </form>
             </Form>
           </DialogDescription>

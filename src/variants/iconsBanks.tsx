@@ -1,0 +1,24 @@
+export const ICONS_BANKS = {
+  ITAU: () => (
+    <svg
+      width="100"
+      height="100"
+      viewBox="0 0 100 100"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect width="100" height="100" rx="20" fill="#FF6E00" />
+      <text
+        x="50%"
+        y="60%"
+        dominant-baseline="middle"
+        text-anchor="middle"
+        font-family="Arial, sans-serif"
+        font-size="36"
+        fill="#001E61"
+        font-weight="bold"
+      >
+        Itaú
+      </text>
+    </svg>
+  ),
+};

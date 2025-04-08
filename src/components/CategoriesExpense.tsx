@@ -9,12 +9,12 @@ import { RegisterCategory } from "./RegisterCategory";
 import { Category } from "./Category";
 import { cn } from "@/lib/utils";
 
-export const CategoriesIncome = () => {
+export const CategoriesExpense = () => {
   const [isOpenCreateCategory, setIsOpenCreateCategory] = useState(false);
 
   const { data: categories } = useQuery({
-    queryKey: ["categories-income"],
-    queryFn: async () => getCategories({ type: "INCOME" }),
+    queryKey: ["categories-expense"],
+    queryFn: async () => getCategories({ type: "EXPENSE" }),
     enabled: !isOpenCreateCategory,
   });
 
@@ -25,12 +25,12 @@ export const CategoriesIncome = () => {
       <RegisterCategory
         open={isOpenCreateCategory}
         setOpen={setIsOpenCreateCategory}
-        type="INCOME"
+        type="EXPENSE"
       />
 
       <div className="mt-4 flex flex-col overflow-hidden">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-lg text-green-500 py-2">Entradas</span>
+          <span className="text-lg text-red-500 py-2">Saídas</span>
           <Button size="icon" onClick={() => setIsOpenCreateCategory(true)}>
             <PlusIcon />
           </Button>

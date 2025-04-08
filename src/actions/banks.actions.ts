@@ -1,6 +1,5 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUserId } from "./user.actions";
 
@@ -42,11 +41,7 @@ export async function createBank({
   description,
 }: CreateBankProps) {
   try {
-    const session = await auth();
-
-    if (!session) throw new Error("Not authenticated");
-
-    const userId = session.user?.id;
+    const userId = await getUserId();
 
     if (!userId) throw new Error("User ID not found");
 
@@ -82,9 +77,9 @@ export async function updateBank({
   description,
 }: UpdateBankProps) {
   try {
-    const userId = await getUserId()
+    const userId = await getUserId();
 
-    if(!userId) throw new Error("User ID not found")
+    if (!userId) throw new Error("User ID not found");
 
     await prisma.accountBanks.update({
       where: {
