@@ -29,13 +29,17 @@ import { PlusIcon } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getCategories } from "@/actions/categories.actions";
 import { getBanks } from "@/actions/banks.actions";
-import { createTransaction } from "@/actions/transactions.actions";
+import {
+  createTransaction,
+  updatedTransaction,
+} from "@/actions/transactions.actions";
 import { Loading } from "./Loading";
 import { CalendarInput } from "./CalendarInput";
 import { FieldSelectBanks } from "./FieldSelectBanks";
 
 interface RegisterTransactionDialogProps {
-  actions?: "COPY";
+  transactionId?: string;
+  actions?: "COPY" | "EDIT";
   type: "INCOME" | "EXPENSE";
   datetime?: Date;
   bankId?: string;
@@ -55,6 +59,7 @@ const formSchema = z.object({
 export type FormSchemaProps = z.infer<typeof formSchema>;
 
 export const RegisterTransactionDialog = ({
+  transactionId,
   actions,
   type = "EXPENSE",
   bankId,
@@ -63,6 +68,7 @@ export const RegisterTransactionDialog = ({
   value,
   datetime,
 }: RegisterTransactionDialogProps) => {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const queryClient = useQueryClient();
 
   const { data: banks } = useQuery({
@@ -110,7 +116,20 @@ export const RegisterTransactionDialog = ({
       date,
       value,
       description,
-    }: FormSchemaProps) =>
+    }: FormSchemaProps) => {
+      if (actions === "EDIT") {
+        await updatedTransaction({
+          transactionId: transactionId!,
+          bank,
+          category,
+          type,
+          date,
+          value,
+          description,
+        });
+        return;
+      }
+
       await createTransaction({
         bank,
         category,
@@ -118,13 +137,19 @@ export const RegisterTransactionDialog = ({
         date,
         value,
         description,
-      }),
+      });
+    },
     onSuccess: () => {
       form.reset();
+      queryClient.invalidateQueries({
+        queryKey: ["banks"],
+        exact: true,
+      });
       queryClient.invalidateQueries({
         queryKey: ["transactions"],
         exact: false,
       });
+      setIsOpen(false);
     },
   });
 
@@ -136,7 +161,7 @@ export const RegisterTransactionDialog = ({
         type={type}
       />
 
-      <Dialog>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
           <div>
             {actions === undefined ? (
@@ -172,13 +197,26 @@ export const RegisterTransactionDialog = ({
                     <LucideIcon.Copy className="size-3" />
                   </Button>
                 )}
+
+                {actions === "EDIT" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="dark:bg-transparent dark:border-neutral-700"
+                  >
+                    <LucideIcon.Edit className="size-3" />
+                  </Button>
+                )}
               </>
             )}
           </div>
         </DialogTrigger>
         <DialogContent className="bg-zinc-800 border-zinc-700">
           <DialogHeader>
-            <DialogTitle>Add {type}</DialogTitle>
+            <DialogTitle className="text-center mb-2">
+              {actions === "EDIT" ? "Editar " : "Adicionar "}
+              {type === "EXPENSE" ? "Saída" : "Entrada"}
+            </DialogTitle>
             <DialogDescription asChild>
               <Form {...form}>
                 <form
@@ -210,7 +248,7 @@ export const RegisterTransactionDialog = ({
                           name="category"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Categories:</FormLabel>
+                              <FormLabel>Categorias:</FormLabel>
                               <FormControl>
                                 <Select
                                   onValueChange={field.onChange}
@@ -271,7 +309,7 @@ export const RegisterTransactionDialog = ({
                         name="description"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Description:</FormLabel>
+                            <FormLabel>Descrição:</FormLabel>
                             <FormControl>
                               <Textarea
                                 className="resize-none dark:bg-neutral-900 dark:border-neutral-700"
@@ -287,7 +325,7 @@ export const RegisterTransactionDialog = ({
                         name="value"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Price:</FormLabel>
+                            <FormLabel>Preço:</FormLabel>
                             <FormControl>
                               <Input
                                 className="dark:bg-neutral-900 dark:border-neutral-700"
@@ -310,7 +348,9 @@ export const RegisterTransactionDialog = ({
                     type="submit"
                     form="register-transaction-form"
                   >
-                    {isPending ? <Loading /> : "Register Transaction"}
+                    {isPending && <Loading />}
+                    {actions === "EDIT" ? "Atualizar " : "Adicionar "}
+                    Transação
                   </Button>
                 </form>
               </Form>

@@ -32,6 +32,10 @@ export const DialogDeleteTransaction = ({
         queryKey: ["transactions"],
         exact: false,
       });
+      queryClient.invalidateQueries({
+        queryKey: ["banks"],
+        exact: false,
+      });
 
       setOpen(false)
     },
@@ -44,10 +48,9 @@ export const DialogDeleteTransaction = ({
           <div>
             <Button
               size="sm"
-              variant="outline"
-              className="dark:bg-red-400 dark:border-neutral-700"
+              variant="dark"
             >
-              <LucideIcon.Trash className="size-3" />
+              <LucideIcon.Trash className="size-3 text-neutral-500" />
             </Button>
           </div>
         </DialogTrigger>

@@ -4,6 +4,7 @@ import { FormSchemaProps } from "@/components/RegisterTransactionDialog";
 import { getUserId } from "./user.actions";
 import { prisma } from "@/lib/prisma";
 import { transformToCents } from "@/lib/utils";
+import { parse } from 'csv-parse'
 
 export async function getTypeTransactions(type: "INCOME" | "EXPENSE") {
   try {
@@ -136,10 +137,12 @@ export async function getTransactions({ date }: { date: Date }) {
       {} as { [key: string]: typeof transactions }
     );
 
-    const transactionsByDate = Object.entries(groupedTransactions).map(([date, transactions]) => ({
-      date,
-      transactions
-    }))
+    const transactionsByDate = Object.entries(groupedTransactions).map(
+      ([date, transactions]) => ({
+        date,
+        transactions,
+      })
+    );
 
     const transactionsFormatted = transactions.reduce(
       (acc, transaction) => {
@@ -164,7 +167,7 @@ export async function getTransactions({ date }: { date: Date }) {
       success: true,
       transactions,
       resume: transactionsFormatted,
-      transactionsByDate
+      transactionsByDate,
     };
   } catch (error) {
     console.log(error);
@@ -238,18 +241,122 @@ export async function createTransaction({
   }
 }
 
+interface UpdatedTransactionProps extends FormSchemaProps {
+  transactionId: string;
+  type: "INCOME" | "EXPENSE";
+}
+
+export async function updatedTransaction({
+  transactionId,
+  bank,
+  category,
+  date,
+  value,
+  description,
+  type,
+}: UpdatedTransactionProps) {
+  try {
+    const userId = await getUserId();
+
+    if (!userId) throw new Error("User ID not found");
+
+    const transaction = await prisma.transactions.findUnique({
+      where: {
+        id: transactionId,
+      },
+    });
+
+    if (!transaction) throw new Error("Transaction not found");
+
+    const updatedTransaction = await prisma.transactions.update({
+      where: {
+        id: transactionId,
+      },
+      data: {
+        userId,
+        date,
+        type,
+        accountBanksId: bank,
+        value: transformToCents(value),
+        categoryId: category,
+        description,
+      },
+    });
+
+    if (transaction.type === "INCOME") {
+      await prisma.accountBanks.update({
+        where: {
+          userId,
+          id: transaction.accountBanksId,
+        },
+        data: {
+          amount: {
+            decrement: transaction.value,
+          },
+        },
+      });
+
+      await prisma.accountBanks.update({
+        where: {
+          userId,
+          id: updatedTransaction.accountBanksId,
+        },
+        data: {
+          amount: {
+            increment: updatedTransaction.value,
+          },
+        },
+      });
+    }
+
+    if (transaction.type === "EXPENSE") {
+      await prisma.accountBanks.update({
+        where: {
+          userId,
+          id: transaction.accountBanksId,
+        },
+        data: {
+          amount: {
+            increment: transaction.value,
+          },
+        },
+      });
+
+      await prisma.accountBanks.update({
+        where: {
+          userId,
+          id: updatedTransaction.accountBanksId,
+        },
+        data: {
+          amount: {
+            decrement: updatedTransaction.value,
+          },
+        },
+      });
+    }
+
+    return {
+      success: true,
+      message: "Transaction updated successfully",
+    };
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 export async function deleteTransaction(idTransaction: string) {
   try {
     const userId = await getUserId();
 
     if (!userId) throw new Error("User ID not found");
 
-    const transaction = await prisma.transactions.delete({
+    const transaction = await prisma.transactions.findUnique({
       where: {
-        userId,
         id: idTransaction,
       },
     });
+
+    if (!transaction) throw new Error("Transaction not found");
 
     if (transaction.type === "INCOME") {
       await prisma.accountBanks.update({
@@ -279,11 +386,114 @@ export async function deleteTransaction(idTransaction: string) {
       });
     }
 
+    await prisma.transactions.delete({
+      where: {
+        userId,
+        id: idTransaction,
+      },
+    });
+
     return {
       success: true,
       message: "Transaction deleted successfully",
     };
   } catch (error) {
     return { success: false, error };
+  }
+}
+
+export async function exportTransctions(date: Date) {
+  try {
+    const userId = await getUserId();
+
+    if (!userId) throw new Error("User ID not found");
+
+    const firstDayOfLastMonth = new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), 1, 0, 0, 0)
+    );
+    const lastDayOfLastMonth = new Date(
+      Date.UTC(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59)
+    );
+
+    const transactions = await prisma.transactions.findMany({
+      where: {
+        userId,
+        date: {
+          gte: firstDayOfLastMonth,
+          lte: lastDayOfLastMonth,
+        },
+      },
+      select: {
+        date: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        bank: {
+          select: {
+            id: true,
+            bank: true,
+          },
+        },
+        type: true,
+        value: true,
+        description: true,
+        id: true,
+      },
+    });
+
+    if (!transactions.length)
+      return {
+        success: false,
+        message: "Nenhuma transação encontrada",
+      };
+
+    const csvHeader = "ID,Banco,Categoria,Tipo,Data,Descricao,Valor";
+    const csvRows = transactions.map(
+      (transaction) =>
+        `${transaction.id},${transaction.bank.bank},${
+          transaction.category.name
+        },${transaction.type},${transaction.date.toISOString()},${
+          transaction.description
+        },${transaction.value}`
+    );
+
+    const csvContent = `${csvHeader}\n${csvRows.join("\n")}`;
+
+    const csvBuffer = Buffer.from(csvContent, "utf-8").toString("base64")
+
+    return csvBuffer
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function importTransactions(file: File) {
+  try {
+    const userId = await getUserId();
+
+    if (!userId) throw new Error("User ID not found");
+
+    const csvContent = await file.text();
+
+    const records = parse(csvContent, {
+      columns: true,
+      skip_empty_lines: true,
+    })
+
+    const transactions = records.map((row: any) => ({
+      description: row.Descrição,
+      amount: parseFloat(row.Valor), 
+      date: new Date(row.Data),
+    }));
+
+    // await prisma.transactions.createMany({
+    //   data: transactions,
+    // });
+
+  } catch (error) {
+    console.log(error)
   }
 }
