@@ -3,6 +3,24 @@
 import { prisma } from "@/lib/prisma";
 import { getUserId } from "./user.actions";
 
+export async function getEveryCategories() {
+  try {
+    const userId = await getUserId();
+
+    if (!userId) throw new Error("User ID not found");
+
+    const categories = await prisma.categories.findMany({
+      where: {
+        userId,
+      },
+    });
+
+    return categories;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 interface GetCategoriesProps {
   type: "EXPENSE" | "INCOME";
 }

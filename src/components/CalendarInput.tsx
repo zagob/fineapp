@@ -20,6 +20,7 @@ export const CalendarInput = <T extends FieldValues>({
           disableNavigation
           selected={field.value}
           onSelect={field.onChange}
+          disabled={(date) => date > new Date()}
           className="rounded-md mx-auto border border-neutral-700 text-center"
           {...field}
         />

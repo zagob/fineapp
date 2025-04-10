@@ -4,7 +4,7 @@ import { FormSchemaProps } from "@/components/RegisterTransactionDialog";
 import { getUserId } from "./user.actions";
 import { prisma } from "@/lib/prisma";
 import { transformToCents } from "@/lib/utils";
-import { parse } from 'csv-parse'
+import { parse } from 'csv-parse/sync'
 
 export async function getTypeTransactions(type: "INCOME" | "EXPENSE") {
   try {
@@ -78,7 +78,14 @@ export async function getTypeTransactions(type: "INCOME" | "EXPENSE") {
   }
 }
 
-export async function getTransactions({ date }: { date: Date }) {
+interface GetTransactionsProps {
+  date: Date
+  type?: "INCOME" | "EXPENSE"
+  categoryId?: string
+  bankId?: string
+}
+
+export async function getTransactions({ date, type, categoryId, bankId }: GetTransactionsProps) {
   try {
     const userId = await getUserId();
 
@@ -98,6 +105,9 @@ export async function getTransactions({ date }: { date: Date }) {
           gte: firstDayOfLastMonth,
           lte: lastDayOfLastMonth,
         },
+        type,
+        categoryId,
+        accountBanksId: bankId
       },
       select: {
         date: true,
@@ -450,15 +460,15 @@ export async function exportTransctions(date: Date) {
         message: "Nenhuma transação encontrada",
       };
 
-    const csvHeader = "ID,Banco,Categoria,Tipo,Data,Descricao,Valor";
+    const csvHeader = "ID,BancoID,Banco,CategoriaID,Categoria,Tipo,Data,Descricao,Valor";
     const csvRows = transactions.map(
-      (transaction) =>
-        `${transaction.id},${transaction.bank.bank},${
-          transaction.category.name
-        },${transaction.type},${transaction.date.toISOString()},${
-          transaction.description
-        },${transaction.value}`
-    );
+      (transaction) =>`
+      ${transaction.id},
+      ${transaction.bank.id},${transaction.bank.bank},
+      ${transaction.category.id},${transaction.category.name},
+      ${transaction.type},${transaction.date.toISOString()},
+      ${transaction.description},${transaction.value}
+    `);
 
     const csvContent = `${csvHeader}\n${csvRows.join("\n")}`;
 
@@ -484,10 +494,16 @@ export async function importTransactions(file: File) {
     })
 
     const transactions = records.map((row: any) => ({
-      description: row.Descrição,
-      amount: parseFloat(row.Valor), 
+      id: row.ID,
+      accountBanksId: row.BancoID,
+      category: row.CategoriaID,
+      type: row.Tipo,
+      description: row.Descricao,
+      value: parseFloat(row.Valor), 
       date: new Date(row.Data),
     }));
+
+    console.log(transactions)
 
     // await prisma.transactions.createMany({
     //   data: transactions,
