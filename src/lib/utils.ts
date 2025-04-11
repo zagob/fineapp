@@ -1,5 +1,5 @@
 import { clsx, type ClassValue } from "clsx";
-import { Readable } from "node:stream";
+import { FormEvent } from "react";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function transformToCents(value: string) {
-  return Number(value.replace("R$", "").replace(",", ".").trim()) * 100;
+  return Number(value.replace(/[^0-9,]/g, "").replace(",", ".")) * 100;
 }
 
 export function transformToCurrency(value: number) {
@@ -31,24 +31,16 @@ export function getFirstAndLastDayOfMonth(date: Date) {
   };
 }
 
-export async function streamToArray<T>(stream: Readable): Promise<T[]> {
-  return new Promise((resolve, reject) => {
-    let data = "";
+export const handleOnInput = (event: FormEvent<HTMLInputElement>) => {
+  const input = event.target as HTMLInputElement;
+  const rawValue = input.value.replace(/\D/g, "");
 
-    stream.on("data", (chunk) => {
-      data += chunk.toString();
-    });
+  if (!rawValue) return;
 
-    stream.on("end", () => {
-      try {
-        const arrayData: T[] = JSON.parse(data); // Se for JSON
-        resolve(arrayData);
-      } catch (error) {
-        console.log(error)
-        reject(new Error("Erro ao converter o Stream para array."));
-      }
-    });
+  const formattedValue = new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(parseFloat(rawValue) / 100);
 
-    stream.on("error", (error) => reject(error));
-  });
-}
+  input.value = formattedValue;
+};

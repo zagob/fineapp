@@ -25,13 +25,12 @@ import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getBanks } from "@/actions/banks.actions";
 import { Loading } from "./Loading";
-import { useDateStore } from "@/store";
-import { createTransfer } from "@/actions/transfers.actions";
-import { PlusCircle } from "lucide-react";
+import { Edit } from "lucide-react";
 import { CalendarInput } from "./CalendarInput";
 import { FieldSelectBanks } from "./FieldSelectBanks";
 import { toast } from "sonner";
 import { handleOnInput } from "@/lib/utils";
+import { updateTransfer } from "@/actions/transfers.actions";
 
 const formSchema = z
   .object({
@@ -47,10 +46,18 @@ const formSchema = z
 
 export type FormSchemaProps = z.infer<typeof formSchema>;
 
-export const RegisterTransfer = () => {
-  const [isOpen, setIsOpen] = useState(false)
-  const dateTimeStore = useDateStore((state) => state.date);
+interface UpdatedTransferProps extends FormSchemaProps {
+  id: string;
+}
 
+export const UpdatedTransfer = ({
+  id,
+  date,
+  bankInitial,
+  bankDestine,
+  value,
+}: UpdatedTransferProps) => {
+  const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: banks } = useQuery({
@@ -68,10 +75,10 @@ export const RegisterTransfer = () => {
   const form = useForm<FormSchemaProps>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      date: dateTimeStore,
-      bankInitial: "",
-      bankDestine: "",
-      value: "",
+      date,
+      bankInitial,
+      bankDestine,
+      value,
     },
   });
 
@@ -82,7 +89,8 @@ export const RegisterTransfer = () => {
       date,
       value,
     }: FormSchemaProps) => {
-      await createTransfer({
+      await updateTransfer({
+        id,
         bankInitial,
         bankDestine,
         date,
@@ -90,7 +98,7 @@ export const RegisterTransfer = () => {
       });
     },
     onSuccess: () => {
-      toast.success("Transferência criada com sucesso!");
+      toast.success("Transferência atualizada com sucesso!");
       form.reset();
       queryClient.invalidateQueries({
         queryKey: ["transactions"],
@@ -104,7 +112,7 @@ export const RegisterTransfer = () => {
         queryKey: ["transfers"],
         exact: false,
       });
-      setIsOpen(false)
+      setIsOpen(false);
     },
   });
 
@@ -112,9 +120,12 @@ export const RegisterTransfer = () => {
     <>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
-          <Button variant="dark" size="sm">
-            <PlusCircle className="mr-2" />
-            Adicionar Transferência
+          <Button
+            size="sm"
+            variant="outline"
+            className="dark:bg-transparent dark:border-neutral-700"
+          >
+            <Edit className="size-3" />
           </Button>
         </DialogTrigger>
         <DialogContent className="bg-zinc-800 border-zinc-700">
@@ -171,7 +182,7 @@ export const RegisterTransfer = () => {
                   </div>
 
                   <Button disabled={isPending} type="submit">
-                    {isPending ? <Loading /> : "Registrar Transferência"}
+                    {isPending ? <Loading /> : "Atualizar Transferência"}
                   </Button>
                 </form>
               </Form>

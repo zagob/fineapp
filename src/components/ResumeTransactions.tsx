@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getTransactions } from "@/actions/transactions.actions";
-import { columns } from '@/components/columnsResumoTransactions'
+import { columns } from '@/components/ColumnsResumoTransactions'
 import { Loading } from "./Loading";
 import { TableTransactions } from "./TableTransactions";
 import { useDateStore } from "@/store";

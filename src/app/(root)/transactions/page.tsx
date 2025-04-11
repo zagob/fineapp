@@ -1,7 +1,7 @@
 "use client";
 
 import { getTransactions } from "@/actions/transactions.actions";
-import { DialogDeleteTransaction } from "@/components/DialogDeleteTransaction";
+import { DialogDeleteTransaction } from "@/components/DeleteTransaction";
 import { ExportTransactions } from "@/components/ExportTransactions";
 import { FilterMonth } from "@/components/FilterMonth";
 import { ImageBank } from "@/components/ImageBank";
@@ -51,11 +51,6 @@ export default function Page() {
       return transactionsByDate;
     },
   });
-
-  console.log({
-    typeTransaction,
-  });
-  console.log("transactions", transactions);
 
   const isTransactionsEmpty = transactions?.length === 0;
 

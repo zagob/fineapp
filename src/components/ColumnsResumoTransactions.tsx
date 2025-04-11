@@ -11,7 +11,7 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip";
 import { RegisterTransactionDialog } from "./RegisterTransactionDialog";
-import { DialogDeleteTransaction } from "./DialogDeleteTransaction";
+import { DialogDeleteTransaction } from "./DeleteTransaction";
 import { ImageBank } from "./ImageBank";
 
 export type Transaction = {
