@@ -12,13 +12,21 @@ import { cn } from "@/lib/utils";
 export const CategoriesExpense = () => {
   const [isOpenCreateCategory, setIsOpenCreateCategory] = useState(false);
 
-  const { data: categories } = useQuery({
+  const { data: categories, isPending } = useQuery({
     queryKey: ["categories-expense"],
     queryFn: async () => getCategories({ type: "EXPENSE" }),
     enabled: !isOpenCreateCategory,
   });
 
   const isEmptyCategories = categories?.length === 0;
+
+  if (isPending) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-neutral-500">Carregando...</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -28,21 +36,18 @@ export const CategoriesExpense = () => {
         type="EXPENSE"
       />
 
-      <div className="mt-4 flex flex-col overflow-hidden">
+      <div className="flex flex-col overflow-hidden">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-lg text-red-500 py-2">Saídas</span>
+          <span className="text-lg text-red-500">Saídas</span>
           <Button size="icon" onClick={() => setIsOpenCreateCategory(true)}>
             <PlusIcon />
           </Button>
         </div>
 
         <div
-          className={cn(
-            "overflow-scroll flex-1 pb-10 border pt-2 px-2 rounded border-neutral-700 bg-neutral-900",
-            {
-              "flex items-center justify-center": isEmptyCategories,
-            }
-          )}
+          className={cn("overflow-scroll flex-1 pb-10 pt-2", {
+            "flex items-center justify-center": isEmptyCategories,
+          })}
         >
           <p
             className={cn("text-neutral-500", {

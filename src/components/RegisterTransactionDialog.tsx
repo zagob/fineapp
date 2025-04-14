@@ -170,7 +170,7 @@ export const RegisterTransactionDialog = ({
                   <Button
                     variant="dark"
                     size="sm"
-                    className="flex cursor-pointer items-center justify-center shadow-xl dark:bg-emerald-900 dark:border-emerald-800"
+                    className="flex cursor-pointer items-center justify-center shadow-xl dark:bg-emerald-900 dark:border-emerald-800 dark:hover:bg-emerald-800"
                   >
                     <LucideIcon.Banknote className="size-5" />
                     Entrada
@@ -179,7 +179,7 @@ export const RegisterTransactionDialog = ({
                   <Button
                     variant="dark"
                     size="sm"
-                    className="flex cursor-pointer items-center justify-center shadow-xl dark:bg-red-900 dark:border-red-800"
+                    className="flex cursor-pointer items-center justify-center shadow-xl dark:bg-red-900 dark:border-red-800 dark:hover:bg-red-800"
                   >
                     <LucideIcon.Banknote className="size-5" />
                     Saída
@@ -256,7 +256,7 @@ export const RegisterTransactionDialog = ({
                                 >
                                   <SelectTrigger
                                     disabled={categories?.length === 0}
-                                    className="w-full dark:text-neutral-200 dark:hover:bg-neutral-900 dark:bg-neutral-900 dark:border-neutral-700"
+                                    className="w-[150px] dark:text-neutral-200 dark:text-ellipsis dark:hover:bg-neutral-900 dark:bg-neutral-900 dark:border-neutral-700"
                                   >
                                     <SelectValue placeholder="Select a category" />
                                   </SelectTrigger>
@@ -275,7 +275,7 @@ export const RegisterTransactionDialog = ({
                                           className="flex items-center gap-2"
                                         >
                                           <div
-                                            className="size-6 rounded-full flex items-center justify-center"
+                                            className="size-6 min-h-6 min-w-6 rounded-full flex items-center justify-center"
                                             style={{
                                               backgroundColor: category.color,
                                             }}

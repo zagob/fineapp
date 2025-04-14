@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { format, getMonth } from "date-fns";
 import {
@@ -10,7 +10,7 @@ import {
 } from "./ui/select";
 import { useDateStore } from "@/store";
 import { Calendar } from "lucide-react";
-import { ptBR } from 'date-fns/locale'
+import { ptBR } from "date-fns/locale";
 
 export const FilterMonth = () => {
   const date = useDateStore((state) => state.date);
@@ -22,15 +22,22 @@ export const FilterMonth = () => {
         useDateStore.getState().setDate(new Date(2025, Number(value)))
       }
     >
-      <SelectTrigger size="sm" className="w-[120px] text-start dark:border-neutral-600 dark:bg-neutral-800 dark:hover:bg-neutral-700">
+      <SelectTrigger
+        size="sm"
+        className="w-[120px] capitalize text-start dark:border-neutral-600 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+      >
         <Calendar />
         <SelectValue className="text-red-500" />
       </SelectTrigger>
       <SelectContent className=" dark:bg-neutral-400 border-none">
         {Array.from({ length: 12 }).map((_, index) => (
-          <SelectItem key={index} value={index.toString()}>
+          <SelectItem
+            key={index}
+            value={index.toString()}
+            className="capitalize"
+          >
             {format(new Date(2025, index), "MMMM", {
-              locale: ptBR
+              locale: ptBR,
             })}
           </SelectItem>
         ))}

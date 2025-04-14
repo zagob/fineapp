@@ -22,6 +22,10 @@ export const CalendarInput = <T extends FieldValues>({
           onSelect={field.onChange}
           disabled={(date) => date > new Date()}
           className="rounded-md mx-auto border border-neutral-700 text-center"
+          classNames={{
+            day_selected: "bg-neutral-600 border border-neutral-400",
+            day_today: "bg-neutral-600 text-neutral-200",
+          }}
           {...field}
         />
       )}

@@ -12,13 +12,21 @@ import { cn } from "@/lib/utils";
 export const CategoriesIncome = () => {
   const [isOpenCreateCategory, setIsOpenCreateCategory] = useState(false);
 
-  const { data: categories } = useQuery({
+  const { data: categories, isPending } = useQuery({
     queryKey: ["categories-income"],
     queryFn: async () => getCategories({ type: "INCOME" }),
     enabled: !isOpenCreateCategory,
   });
 
   const isEmptyCategories = categories?.length === 0;
+
+  if (isPending) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-neutral-500">Carregando...</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -37,12 +45,9 @@ export const CategoriesIncome = () => {
         </div>
 
         <div
-          className={cn(
-            "overflow-scroll flex-1 pb-10 border pt-2 px-2 rounded border-neutral-700 bg-neutral-900",
-            {
-              "flex items-center justify-center": isEmptyCategories,
-            }
-          )}
+          className={cn("overflow-scroll flex-1 pb-10 pt-2", {
+            "flex items-center justify-center": isEmptyCategories,
+          })}
         >
           <p
             className={cn("text-neutral-500", {

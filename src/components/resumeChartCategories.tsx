@@ -21,14 +21,9 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { getTypeTransactions } from "@/actions/transactions.actions";
 import { transformToCurrency } from "@/lib/utils";
-
-const chartData = [
-  { category: "Salário", value: 2500, fill: "hsl(140, 70%, 50%)" }, // Verde forte
-  { category: "Freelance", value: 800, fill: "hsl(140, 70%, 70%)" }, // Verde claro
-  { category: "Aluguel", value: 1200, fill: "hsl(0, 70%, 50%)" }, // Vermelho forte
-  { category: "Alimentação", value: 600, fill: "hsl(0, 70%, 70%)" }, // Vermelho médio
-  { category: "Lazer", value: 300, fill: "hsl(0, 70%, 90%)" }, // Vermelho claro
-];
+import { useDateStore } from "@/store";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const chartConfig = {
   visitors: {
@@ -57,6 +52,8 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function ResumeChartCategories() {
+  const date = useDateStore((state) => state.date);
+
   const { data: chartDataIncome } = useQuery({
     queryKey: ["transactions-income"],
     queryFn: async () => await getTypeTransactions("INCOME"),
@@ -67,34 +64,15 @@ export function ResumeChartCategories() {
     queryFn: async () => await getTypeTransactions("EXPENSE"),
   });
 
-  console.log({
-    chartDataIncome,
-  });
-  // const totalIncome = chartData
-  //   .filter((item) => ["Salário", "Freelance"].includes(item.category))
-  //   .reduce((acc, curr) => acc + curr.value, 0);
-
-  // const totalExpense = chartData
-  //   .filter((item) =>
-  //     ["Aluguel", "Alimentação", "Lazer"].includes(item.category)
-  //   )
-  //   .reduce((acc, curr) => acc + curr.value, 0);
-
-  // const remainingBalance = totalIncome - totalExpense;
-
-  // const data = [
-  //   { name: "Group A", value: 400 },
-  //   { name: "Group B", value: 300 },
-  //   { name: "Group C", value: 300 },
-  //   { name: "Group D", value: 200 },
-  // ];
-  // const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
-
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col bg-neutral-200">
       <CardHeader className="items-center pb-0">
         <CardTitle>Resumo Financeiro</CardTitle>
-        <CardDescription>Março 2025</CardDescription>
+        <CardDescription className="capitalize">
+          {format(date, "MMMM yyyy", {
+            locale: ptBR,
+          })}
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
@@ -105,12 +83,17 @@ export function ResumeChartCategories() {
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent hideLabel />}
-              formatter={(value, name, item) => <div className="flex items-center gap-2">
-                {/* <span>{JSON.stringify(item)}</span> */}
-                <div className="size-5" style={{ backgroundColor: item.color }} />
-                <span>{name}</span>
-                <span>{transformToCurrency(Number(value))}</span>
-              </div>}
+              formatter={(value, name, item) => (
+                <div className="flex items-center gap-2">
+                  {/* <span>{JSON.stringify(item)}</span> */}
+                  <div
+                    className="size-5"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span>{name}</span>
+                  <span>{transformToCurrency(Number(value))}</span>
+                </div>
+              )}
             />
             <Pie
               data={chartDataIncome?.transactionsFormattedToCategories || []}
@@ -123,9 +106,10 @@ export function ResumeChartCategories() {
               // fill="#8884d8"
               paddingAngle={5}
             >
-              {chartDataIncome?.transactions && chartDataIncome?.transactions.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.category.color} />
-              ))}
+              {chartDataIncome?.transactions &&
+                chartDataIncome?.transactions.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.category.color} />
+                ))}
             </Pie>
             <Pie
               data={chartDataExpense?.transactionsFormattedToCategories || []}
@@ -139,9 +123,10 @@ export function ResumeChartCategories() {
               // fill="#82ca9d"
               paddingAngle={5}
             >
-              {chartDataExpense?.transactions && chartDataExpense?.transactions.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.category.color} />
-              ))}
+              {chartDataExpense?.transactions &&
+                chartDataExpense?.transactions.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.category.color} />
+                ))}
             </Pie>
           </PieChart>
         </ChartContainer>

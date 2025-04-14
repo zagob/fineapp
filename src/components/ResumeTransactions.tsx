@@ -1,29 +1,27 @@
-"use client"
+"use client";
 
 import { useQuery } from "@tanstack/react-query";
 import { getTransactions } from "@/actions/transactions.actions";
-import { columns } from '@/components/ColumnsResumoTransactions'
+import { columns } from "@/components/ColumnsResumoTransactions";
 import { Loading } from "./Loading";
-import { TableTransactions } from "./TableTransactions";
 import { useDateStore } from "@/store";
-
-
+import { TableComponent } from "./Table";
 
 export const ResumeTransactions = () => {
   const date = useDateStore((state) => state.date);
 
   const { data, isPending } = useQuery({
-    queryKey: ['transactions', date],
-    queryFn: async () => await getTransactions({ date })
-  })
+    queryKey: ["transactions", date],
+    queryFn: async () => await getTransactions({ date }),
+  });
 
   console.log({
-    data
-  })
+    data,
+  });
 
-  if(isPending) {
-    return <Loading />
+  if (isPending) {
+    return <Loading />;
   }
 
-  return <TableTransactions data={data?.transactions || []} columns={columns}  />
+  return <TableComponent data={data?.transactions || []} columns={columns} />;
 };

@@ -124,58 +124,60 @@ export default function Page() {
         </div>
       )}
 
-      {transfersByDate?.map((transferByDate) => (
-        <div key={transferByDate.date} className="mt-8 flex flex-col gap-3">
-          <div>
-            <p className="text-sm font-light text-neutral-300">
-              {format(
-                new Date(transferByDate.date + "T00:00"),
-                "dd 'de' MMMM",
-                {
-                  locale: ptBR,
-                }
-              )}
-            </p>
+      {!isTransfersEmpty &&
+        !isPending &&
+        transfersByDate?.map((transferByDate) => (
+          <div key={transferByDate.date} className="mt-8 flex flex-col gap-3">
+            <div>
+              <p className="text-sm font-light text-neutral-300">
+                {format(
+                  new Date(transferByDate.date + "T00:00"),
+                  "dd 'de' MMMM",
+                  {
+                    locale: ptBR,
+                  }
+                )}
+              </p>
 
-            <div className="border-l border-l-neutral-700 ml-2 pl-4 pt-2 mt-2 flex flex-col gap-3">
-              {transferByDate.transfers.map((item) => {
-                return (
-                  <div
-                    key={item.id}
-                    className="flex w-fit items-center gap-4 text-xs text-neutral-400"
-                  >
-                    <ImageBank
-                      bank={item.bankInitial.bank}
-                      width={20}
-                      height={20}
-                    />
-                    <Shuffle className="size-3" />
-                    <ImageBank
-                      bank={item.bankDestine.bank}
-                      width={20}
-                      height={20}
-                    />
-                    <span className={cn("w-[100px] text-base")}>
-                      {transformToCurrency(item.value)}
-                    </span>
-
-                    <div className="flex gap-2">
-                      <UpdatedTransfer
-                        id={item.id}
-                        bankInitial={item.bankInitial.bank}
-                        bankDestine={item.bankDestine.bank}
-                        date={item.date}
-                        value={transformToCurrency(item.value)}
+              <div className="border-l border-l-neutral-700 ml-2 pl-4 pt-2 mt-2 flex flex-col gap-3">
+                {transferByDate.transfers.map((item) => {
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex w-fit items-center gap-4 text-xs text-neutral-400"
+                    >
+                      <ImageBank
+                        bank={item.bankInitial.bank}
+                        width={20}
+                        height={20}
                       />
-                      <DeleteTransfer id={item.id} />
+                      <Shuffle className="size-3" />
+                      <ImageBank
+                        bank={item.bankDestine.bank}
+                        width={20}
+                        height={20}
+                      />
+                      <span className={cn("w-[100px] text-base")}>
+                        {transformToCurrency(item.value)}
+                      </span>
+
+                      <div className="flex gap-2">
+                        <UpdatedTransfer
+                          id={item.id}
+                          bankInitial={item.bankInitial.bank}
+                          bankDestine={item.bankDestine.bank}
+                          date={item.date}
+                          value={transformToCurrency(item.value)}
+                        />
+                        <DeleteTransfer id={item.id} />
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
     </div>
   );
 }
