@@ -21,15 +21,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import * as LucideIcon from "lucide-react";
-import { ICONS_CATEGORIES_EXPENSE } from "@/variants/iconsCategories";
 import COLORS from "@/variants/colorCategories";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createCategory } from "@/actions/categories.actions";
 import { toast } from "sonner";
-
-const iconNames = Object.keys(
-  ICONS_CATEGORIES_EXPENSE
-) as (keyof typeof ICONS_CATEGORIES_EXPENSE)[];
+import { InputIconCategory, IconProps } from "./InputIconCategory";
 
 const formSchema = z.object({
   name: z.string(),
@@ -130,30 +126,10 @@ export const RegisterCategory = ({
                           <FormItem>
                             <FormLabel>Icon:</FormLabel>
                             <FormControl>
-                              <Select
-                                onValueChange={field.onChange}
-                                value={field.value}
-                              >
-                                <SelectTrigger className="dark:text-neutral-200 w-full dark:hover:bg-neutral-900 dark:bg-neutral-900 dark:border-neutral-700">
-                                  <SelectValue placeholder="icone" />
-                                </SelectTrigger>
-                                <SelectContent className="dark:bg-neutral-200 border-none">
-                                  {iconNames.map((icon) => {
-                                    const IconComponent =
-                                      ICONS_CATEGORIES_EXPENSE[icon];
-
-                                    return (
-                                      <SelectItem
-                                        key={icon}
-                                        value={icon}
-                                        className="my-px h-6 aria-selected:text-white"
-                                      >
-                                        <IconComponent />
-                                      </SelectItem>
-                                    );
-                                  })}
-                                </SelectContent>
-                              </Select>
+                              <InputIconCategory
+                                value={field.value as IconProps}
+                                onChange={field.onChange}
+                              />
                             </FormControl>
                           </FormItem>
                         )}
