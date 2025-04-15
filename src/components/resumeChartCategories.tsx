@@ -24,6 +24,7 @@ import { transformToCurrency } from "@/lib/utils";
 import { useDateStore } from "@/store";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { ImageCategory } from "./ImageCategory";
 
 const chartConfig = {
   visitors: {
@@ -75,6 +76,7 @@ export function ResumeChartCategories() {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
+        <p className="text-xs text-neutral-600">Categorias de entradas</p>
         <ChartContainer
           config={chartConfig}
           className="mx-auto aspect-square max-h-[250px]"
@@ -85,16 +87,16 @@ export function ResumeChartCategories() {
               content={<ChartTooltipContent hideLabel />}
               formatter={(value, name, item) => (
                 <div className="flex items-center gap-2">
-                  {/* <span>{JSON.stringify(item)}</span> */}
-                  <div
-                    className="size-5"
-                    style={{ backgroundColor: item.color }}
+                  <ImageCategory
+                    color={item.payload.color}
+                    icon={item.payload.icon}
                   />
                   <span>{name}</span>
                   <span>{transformToCurrency(Number(value))}</span>
                 </div>
               )}
             />
+
             <Pie
               data={chartDataIncome?.transactionsFormattedToCategories || []}
               dataKey="total"
@@ -103,7 +105,6 @@ export function ResumeChartCategories() {
               endAngle={0}
               innerRadius={60}
               outerRadius={80}
-              // fill="#8884d8"
               paddingAngle={5}
             >
               {chartDataIncome?.transactions &&
@@ -120,7 +121,6 @@ export function ResumeChartCategories() {
               endAngle={-180}
               innerRadius={60}
               outerRadius={80}
-              // fill="#82ca9d"
               paddingAngle={5}
             >
               {chartDataExpense?.transactions &&
@@ -130,6 +130,7 @@ export function ResumeChartCategories() {
             </Pie>
           </PieChart>
         </ChartContainer>
+        <p className="text-xs text-neutral-600">Categoria de saídas</p>
       </CardContent>
       <CardFooter className="flex-col gap-2 text-sm">
         <div className="flex items-center gap-2 font-medium leading-none">
