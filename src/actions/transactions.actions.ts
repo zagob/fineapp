@@ -5,6 +5,10 @@ import { getUserId } from "./user.actions";
 import { prisma } from "@/lib/prisma";
 import { transformToCents } from "@/lib/utils";
 import { parse } from "csv-parse/sync";
+import { endOfMonth, format, startOfMonth, subMonths } from "date-fns";
+import { Type } from "@prisma/client";
+import { ptBR } from "date-fns/locale";
+import { revalidatePath } from "next/cache";
 
 export async function getTypeTransactions(type: "INCOME" | "EXPENSE") {
   try {
@@ -521,5 +525,274 @@ export async function importTransactions(file: File) {
     // });
   } catch (error) {
     console.log(error);
+  }
+}
+
+export async function getSpendingComparison(date: Date) {
+  try {
+    const userId = await getUserId();
+
+    if (!userId) throw new Error("User ID not found");
+
+    const currentDate = new Date(date);
+    const previousMonthDate = subMonths(currentDate, 1);
+
+    const firstDayCurrentMonth = startOfMonth(currentDate);
+    const lastDayCurrentMonth = endOfMonth(currentDate);
+
+    const firstDayPreviousMonth = startOfMonth(previousMonthDate);
+    const lastDayPreviousMonth = endOfMonth(previousMonthDate);
+
+    const currentMonthExpenses = await prisma.transactions.findMany({
+      where: {
+        userId,
+        type: Type.EXPENSE,
+        date: {
+          gte: firstDayCurrentMonth,
+          lte: lastDayCurrentMonth,
+        },
+      },
+    });
+
+    const previousMonthExpenses = await prisma.transactions.findMany({
+      where: {
+        userId,
+        type: Type.EXPENSE,
+        date: {
+          gte: firstDayPreviousMonth,
+          lte: lastDayPreviousMonth,
+        },
+      },
+    });
+
+    const currentMonthTotal = currentMonthExpenses.reduce(
+      (acc, transaction) => acc + transaction.value,
+      0
+    );
+    const previousMonthTotal = previousMonthExpenses.reduce(
+      (acc, transaction) => acc + transaction.value,
+      0
+    );
+
+    let percentageChange = 0;
+
+    if (previousMonthTotal > 0) {
+      percentageChange =
+        ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) * 100;
+    } else if (currentMonthTotal > 0) {
+      percentageChange = 100;
+    }
+
+    const formattedPercentage = Number(percentageChange.toFixed(1));
+
+    const trend =
+      percentageChange > 0
+        ? "increase"
+        : percentageChange < 0
+        ? "decrease"
+        : "stable";
+
+    const currentMonthName = format(currentDate, "MMMM", { locale: ptBR });
+    const previousMonthName = format(previousMonthDate, "MMMM", {
+      locale: ptBR,
+    });
+
+    revalidatePath("/");
+
+    return {
+      currentMonth: {
+        name: currentMonthName,
+        total: currentMonthTotal,
+      },
+      previousMonth: {
+        name: previousMonthName,
+        total: previousMonthTotal,
+      },
+      percentageChange: formattedPercentage,
+      trend,
+      status: 200,
+    };
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export async function getSpendingComparisonFilter({
+  months = 1,
+  categoryId = null,
+  bankId = null,
+  path = '/'
+}) {
+  try {
+    const userId = await getUserId();
+    
+    if (!userId) {
+      return { error: 'Usuário não encontrado', status: 404 };
+    }
+    
+    const currentDate = new Date();
+    const previousMonthDate = subMonths(currentDate, months);
+    
+    const firstDayCurrentMonth = startOfMonth(currentDate);
+    const lastDayCurrentMonth = endOfMonth(currentDate);
+    
+    const firstDayPreviousMonth = startOfMonth(previousMonthDate);
+    const lastDayPreviousMonth = endOfMonth(previousMonthDate);
+    
+    const baseFilter = {
+      userId,
+      type: Type.EXPENSE,
+    };
+    
+    if (categoryId) {
+      baseFilter['categoryId'] = categoryId;
+    }
+    
+    if (bankId) {
+      baseFilter['accountBanksId'] = bankId;
+    }
+    
+    const currentMonthExpenses = await prisma.transactions.findMany({
+      where: {
+        ...baseFilter,
+        date: {
+          gte: firstDayCurrentMonth,
+          lte: lastDayCurrentMonth,
+        },
+      },
+      include: {
+        category: true,
+        bank: true,
+      },
+    });
+    
+    // Buscar transações do mês anterior (despesas)
+    const previousMonthExpenses = await prisma.transactions.findMany({
+      where: {
+        ...baseFilter,
+        date: {
+          gte: firstDayPreviousMonth,
+          lte: lastDayPreviousMonth,
+        },
+      },
+      include: {
+        category: true,
+        bank: true,
+      },
+    });
+    
+    // Calcular o total de despesas para cada mês
+    const currentMonthTotal = currentMonthExpenses.reduce((acc, transaction) => acc + transaction.value, 0);
+    const previousMonthTotal = previousMonthExpenses.reduce((acc, transaction) => acc + transaction.value, 0);
+    
+    // Calcular a variação percentual
+    let percentageChange = 0;
+    
+    if (previousMonthTotal > 0) {
+      // ((atual - anterior) / anterior) * 100
+      percentageChange = ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) * 100;
+    } else if (currentMonthTotal > 0) {
+      // Se o mês anterior for zero e o atual for maior que zero, considera 100% de aumento
+      percentageChange = 100;
+    }
+    
+    // Formatar o valor para 1 casa decimal
+    const formattedPercentage = Number(percentageChange.toFixed(1));
+    
+    // Determinar se o usuário gastou mais ou menos
+    const trend = percentageChange > 0 ? 'increase' : percentageChange < 0 ? 'decrease' : 'stable';
+    
+    // Nome dos meses em português usando date-fns
+    const currentMonthName = format(currentDate, 'MMMM', { locale: ptBR });
+    const previousMonthName = format(previousMonthDate, 'MMMM', { locale: ptBR });
+    
+    // Obtenha detalhes de filtro para mostrar no resultado
+    let filterDetails = {};
+    
+    if (categoryId) {
+      const category = await prisma.categories.findUnique({
+        where: { id: categoryId },
+      });
+      filterDetails['category'] = category ? category.name : 'Categoria desconhecida';
+    }
+    
+    if (bankId) {
+      const bank = await prisma.accountBanks.findUnique({
+        where: { id: bankId },
+      });
+      filterDetails['bank'] = bank ? bank.description : 'Banco desconhecido';
+    }
+    
+    // Agrupar dados por categoria para análise detalhada
+    const categorySummary = {};
+    
+    // Agrupa as despesas do mês atual por categoria
+    currentMonthExpenses.forEach(transaction => {
+      const categoryName = transaction.category.name;
+      if (!categorySummary[categoryName]) {
+        categorySummary[categoryName] = {
+          current: 0,
+          previous: 0,
+          color: transaction.category.color,
+        };
+      }
+      categorySummary[categoryName].current += transaction.value;
+    });
+    
+    // Agrupa as despesas do mês anterior por categoria
+    previousMonthExpenses.forEach(transaction => {
+      const categoryName = transaction.category.name;
+      if (!categorySummary[categoryName]) {
+        categorySummary[categoryName] = {
+          current: 0,
+          previous: transaction.value,
+          color: transaction.category.color,
+        };
+      } else {
+        categorySummary[categoryName].previous += transaction.value;
+      }
+    });
+    
+    // Calcular variação percentual para cada categoria
+    Object.keys(categorySummary).forEach(category => {
+      const { current, previous } = categorySummary[category];
+      let categoryPercentage = 0;
+      
+      if (previous > 0) {
+        categoryPercentage = ((current - previous) / previous) * 100;
+      } else if (current > 0) {
+        categoryPercentage = 100;
+      }
+      
+      categorySummary[category].percentageChange = Number(categoryPercentage.toFixed(1));
+      categorySummary[category].trend = 
+        categoryPercentage > 0 ? 'increase' : 
+        categoryPercentage < 0 ? 'decrease' : 'stable';
+    });
+    
+    // Revalidar o caminho para atualizar os dados em cache
+    revalidatePath(path);
+    
+    return {
+      currentMonth: {
+        name: currentMonthName,
+        total: currentMonthTotal,
+        date: currentDate,
+      },
+      previousMonth: {
+        name: previousMonthName,
+        total: previousMonthTotal,
+        date: previousMonthDate,
+      },
+      percentageChange: formattedPercentage,
+      trend,
+      filter: filterDetails,
+      categories: categorySummary,
+      status: 200
+    };
+    
+  } catch (error) {
+    console.error('Erro ao calcular comparação de gastos:', error);
+    return { error: 'Erro ao processar requisição', status: 500 };
   }
 }
