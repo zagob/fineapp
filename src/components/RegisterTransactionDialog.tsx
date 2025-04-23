@@ -149,6 +149,14 @@ export const RegisterTransactionDialog = ({
         queryKey: ["transactions"],
         exact: false,
       });
+      queryClient.invalidateQueries({
+        queryKey: ["transactions-type"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["transactions-categories"],
+        exact: false,
+      });
       setIsOpen(false);
     },
   });

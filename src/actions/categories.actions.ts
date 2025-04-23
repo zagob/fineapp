@@ -125,3 +125,39 @@ export async function deleteCategory(id: string) {
     console.log(error);
   }
 }
+
+export async function allCategoriesWithTransactions(
+  type: "INCOME" | "EXPENSE"
+) {
+  try {
+    const userId = await getUserId();
+
+    if (!userId) throw new Error("User ID not found");
+
+    const categories = await prisma.categories.findMany({
+      where: {
+        Transactions: {
+          some: {
+            userId,
+          },
+        },
+        type,
+      },
+      include: {
+        Transactions: {
+          where: {
+            userId,
+          },
+        },
+      },
+    });
+
+    return {
+      categories,
+      success: true,
+      message: "Categories with transactions retrieved successfully",
+    };
+  } catch (error) {
+    console.log(error);
+  }
+}

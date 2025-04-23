@@ -1,11 +1,8 @@
 "use client";
 
 import { getTransactions } from "@/actions/transactions.actions";
-import { DialogDeleteTransaction } from "@/components/DeleteTransaction";
 import { ExportTransactions } from "@/components/ExportTransactions";
 import { FilterMonth } from "@/components/FilterMonth";
-import { ImageBank } from "@/components/ImageBank";
-import { ImageCategory } from "@/components/ImageCategory";
 import { Loading } from "@/components/Loading";
 import { RegisterTransactionDialog } from "@/components/RegisterTransactionDialog";
 import { SelectBanksTransaction } from "@/components/SelectBanksTransaction";
@@ -20,14 +17,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { cn, transformToCurrency } from "@/lib/utils";
 import { useDateStore, useTransactionStore } from "@/store";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { X } from "lucide-react";
-import { RechartIncome } from "./RechartIncome";
 import { RechartExpense } from "./RechartExpense";
+import { TransactionsByDate } from "./TransactionsByDate";
 
 export default function Page() {
   const date = useDateStore((state) => state.date);
@@ -70,15 +66,6 @@ export default function Page() {
             <RegisterTransactionDialog type="EXPENSE" />
 
             <ExportTransactions />
-          </div>
-
-          <div className="mt-4 flex items-center gap-4">
-            <span className="text-green-500">
-              {transformToCurrency(data?.resume?.totalIncome ?? 0)}
-            </span>
-            <span className="text-red-500">
-              {transformToCurrency(data?.resume?.totalExpense ?? 0)}
-            </span>
           </div>
         </div>
 
@@ -165,100 +152,11 @@ export default function Page() {
       )}
 
       <div className="flex gap-4">
-        <div className="w-fit h-[calc(100vh-230px)] overflow-scroll mt-4 pr-4 pb-10 border-r border-r-neutral-800">
-          {data?.transactionsByDate?.map((transaction) => (
-            <div key={transaction.date} className="mt-8 flex flex-col gap-3">
-              <div>
-                <p className="text-sm font-light text-neutral-300">
-                  {format(
-                    new Date(transaction.date + "T00:00"),
-                    "dd 'de' MMMM",
-                    {
-                      locale: ptBR,
-                    }
-                  )}
-                </p>
-
-                <div className="border-l border-l-neutral-700 ml-2 pl-4 pt-2 mt-2 flex flex-col gap-3">
-                  {transaction.transactions.map((item) => {
-                    const isNotDescription =
-                      item.description?.length === 0 || !item.description;
-
-                    return (
-                      <div
-                        key={item.id}
-                        className="flex w-fit items-center gap-4 text-xs text-neutral-400"
-                      >
-                        <ImageBank
-                          bank={item.bank.bank}
-                          width={20}
-                          height={20}
-                        />
-                        <ImageCategory
-                          color={item.category.color}
-                          icon={item.category.icon as string}
-                          classNameBackground="size-5"
-                          classNameIcon="size-3"
-                        />
-                        <span
-                          className={cn("w-[200px]", {
-                            "text-neutral-700 text-center": isNotDescription,
-                          })}
-                        >
-                          {isNotDescription
-                            ? "sem descrição"
-                            : item.description}
-                        </span>
-                        <span
-                          className={cn("w-12", {
-                            "text-red-400": item.type === "EXPENSE",
-                            "text-green-400": item.type === "INCOME",
-                          })}
-                        >
-                          {item.type === "INCOME" ? "Entrada" : "Saída"}
-                        </span>
-                        <span
-                          className={cn("text-base w-[100px]", {
-                            "text-red-400": item.type === "EXPENSE",
-                            "text-green-400": item.type === "INCOME",
-                          })}
-                        >
-                          {transformToCurrency(item.value)}
-                        </span>
-
-                        <div className="flex gap-2">
-                          <RegisterTransactionDialog
-                            transactionId={item.id}
-                            type={item.type}
-                            actions="EDIT"
-                            bankId={item.bank.id}
-                            category={item.category.id}
-                            description={item.description ?? ""}
-                            value={transformToCurrency(item.value)}
-                            datetime={item.date}
-                          />
-                          <RegisterTransactionDialog
-                            type={item.type}
-                            actions="COPY"
-                            bankId={item.bank.id}
-                            category={item.category.id}
-                            description={item.description ?? ""}
-                            value={transformToCurrency(item.value)}
-                            datetime={item.date}
-                          />
-                          <DialogDeleteTransaction id={item.id} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="flex-1 flex justify-center">
-          <RechartIncome />
-          <RechartExpense />
+        <TransactionsByDate transactionsByDate={data?.transactionsByDate ?? []} />
+        
+        <div className="flex-1 grid grid-cols-2">
+          <RechartExpense type="INCOME" totalValue={data?.resume?.totalIncome} />
+          <RechartExpense type="EXPENSE" totalValue={data?.resume?.totalExpense} />
         </div>
       </div>
     </div>
