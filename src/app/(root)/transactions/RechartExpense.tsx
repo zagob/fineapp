@@ -3,6 +3,13 @@
 import { allCategoriesWithTransactions } from "@/actions/categories.actions";
 import { getTypeTransactions } from "@/actions/transactions.actions";
 import { ImageCategory } from "@/components/ImageCategory";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { cn, transformToCurrency } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
@@ -41,12 +48,12 @@ export const RechartExpense = ({
   type: "INCOME" | "EXPENSE";
   totalValue?: number;
 }) => {
-  const { data: chartDataIncome, } = useQuery({
+  const { data: chartDataIncome } = useQuery({
     queryKey: ["transactions-type", type],
     queryFn: async () => await getTypeTransactions(type),
   });
 
-  const { data: categories, } = useQuery({
+  const { data: categories } = useQuery({
     queryKey: ["transactions-categories", type],
     queryFn: async () => await allCategoriesWithTransactions(type),
   });
@@ -57,61 +64,69 @@ export const RechartExpense = ({
 
   return (
     <div className="mt-12">
-      <h3
-        className={cn(
-          "pl-12 text-xl font-light",
-          type === "INCOME" ? "text-green-300" : "text-red-300"
-        )}
-      >
-        {type === "INCOME" ? "Categorias de entrada: " : "Categorias de saída: "}
-        <strong>{transformToCurrency(totalValue)}</strong>
-      </h3>
-
-      <div className="flex justify-center">
-        <PieChart  id={`chart-${type}`} width={200} height={200}>
-          <Pie
-            data={valuesCategoriesByTransaction}
-            cx="50%"
-            cy="50%"
-            labelLine={false}
-            label={renderCustomizedLabel}
-            outerRadius={80}
-            dataKey="total"
+      <Card className="flex flex-col bg-neutral-300">
+        <CardHeader className="items-center pb-0">
+          <CardTitle>
+            {type === "INCOME"
+              ? "Categorias de entrada: "
+              : "Categorias de saída: "}
+          </CardTitle>
+          <CardDescription
+            className={cn(
+              type === "INCOME" ? "text-green-600" : "text-red-600"
+            )}
           >
-            {valuesCategoriesByTransaction?.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-          <Tooltip
-            formatter={(value) => transformToCurrency(value as number)}
-            isAnimationActive
-            separator=": "
-            labelClassName="bg-neutral-800 text-neutral-200"
-
-          />
-        </PieChart>
-      </div>
-
-      <div className="flex flex-col gap-2 pl-12">
-        {categories?.categories.map((category) => (
-          <div
-            key={category.id}
-            className="flex gap-2 items-center text-neutral-500 font-mono"
-          >
-            <ImageCategory
-              icon={category.icon as string}
-              color={category.color}
+            {transformToCurrency(totalValue)}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex-1 pb-0 flex">
+          <PieChart id={`chart-${type}`} width={220} height={220}>
+            <Pie
+              data={valuesCategoriesByTransaction}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              label={renderCustomizedLabel}
+              outerRadius={100}
+              dataKey="total"
+              suppressHydrationWarning
+            >
+              {valuesCategoriesByTransaction?.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+            <Tooltip
+              formatter={(value) => transformToCurrency(value as number)}
+              isAnimationActive
+              separator=": "
+              labelClassName="bg-neutral-800 text-neutral-200"
             />
+          </PieChart>
+          <div className="flex flex-col gap-2 pl-12">
+            {categories?.categories.map((category) => (
+              <div
+                key={category.id}
+                className="flex gap-2 items-center text-neutral-500"
+              >
+                <ImageCategory
+                  icon={category.icon as string}
+                  color={category.color}
+                />
 
-            <span>{category.name} - </span>
-            <span>
-              {transformToCurrency(
-                category.Transactions.reduce((acc, item) => acc + item.value, 0)
-              )}
-            </span>
+                <span>{category.name} - </span>
+                <span>
+                  {transformToCurrency(
+                    category.Transactions.reduce(
+                      (acc, item) => acc + item.value,
+                      0
+                    )
+                  )}
+                </span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -154,7 +154,7 @@ export default function Page() {
       <div className="flex gap-4">
         <TransactionsByDate transactionsByDate={data?.transactionsByDate ?? []} />
         
-        <div className="flex-1 grid grid-cols-2">
+        <div className="flex-1 grid grid-cols-2 gap-4">
           <RechartExpense type="INCOME" totalValue={data?.resume?.totalIncome} />
           <RechartExpense type="EXPENSE" totalValue={data?.resume?.totalExpense} />
         </div>
