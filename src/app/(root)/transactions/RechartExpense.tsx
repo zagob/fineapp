@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn, transformToCurrency } from "@/lib/utils";
+import { useDateStore, useTransactionStore } from "@/store";
 import { useQuery } from "@tanstack/react-query";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 
@@ -48,22 +49,42 @@ export const RechartExpense = ({
   type: "INCOME" | "EXPENSE";
   totalValue?: number;
 }) => {
+  const date = useDateStore((state) => state.date);
+    const {
+      // typeTransaction,
+      // setTypeTransaction,
+      category,
+      // setCategory,
+      bank,
+      // setBank,
+    } = useTransactionStore();
+
   const { data: chartDataIncome } = useQuery({
-    queryKey: ["transactions-type", type],
-    queryFn: async () => await getTypeTransactions(type),
+    queryKey: ["transactions-type", type, date, category, bank],
+    queryFn: async () => await getTypeTransactions({ type, date, 
+      filters: {
+        categoryId: category.length > 0 ? category : undefined,
+        bankId: !bank || bank.length === 0 ? undefined : bank,
+      }
+     }),
   });
 
   const { data: categories } = useQuery({
-    queryKey: ["transactions-categories", type],
-    queryFn: async () => await allCategoriesWithTransactions(type),
+    queryKey: ["transactions-categories", type, date, category, bank],
+    queryFn: async () => await allCategoriesWithTransactions({ type, date, filters: {
+      categoryId: category.length > 0 ? category : undefined,
+      bankId: !bank || bank.length === 0 ? undefined : bank,
+    } }),
   });
 
   const valuesCategoriesByTransaction = Object.values(
     chartDataIncome?.transactionsFormattedToCategories ?? []
   );
 
+  const isEmptyValue = valuesCategoriesByTransaction?.length === 0;
+
   return (
-    <div className="mt-12">
+    <div>
       <Card className="flex flex-col bg-neutral-300">
         <CardHeader className="items-center pb-0">
           <CardTitle>
@@ -80,6 +101,9 @@ export const RechartExpense = ({
           </CardDescription>
         </CardHeader>
         <CardContent className="flex-1 pb-0 flex">
+          {isEmptyValue && (
+            <div className="text-neutral-600">Nenhuma transação encontrada</div>
+          )}
           <PieChart id={`chart-${type}`} width={220} height={220}>
             <Pie
               data={valuesCategoriesByTransaction}

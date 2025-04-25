@@ -56,13 +56,13 @@ export function ResumeChartCategories() {
   const date = useDateStore((state) => state.date);
 
   const { data: chartDataIncome } = useQuery({
-    queryKey: ["transactions-income"],
-    queryFn: async () => await getTypeTransactions("INCOME"),
+    queryKey: ["transactions-income", date],
+    queryFn: async () => await getTypeTransactions({ type: "INCOME", date }),
   });
 
   const { data: chartDataExpense } = useQuery({
-    queryKey: ["transactions-expense"],
-    queryFn: async () => await getTypeTransactions("EXPENSE"),
+    queryKey: ["transactions-expense", date],
+    queryFn: async () => await getTypeTransactions({ type: "EXPENSE", date }),
   });
 
   return (

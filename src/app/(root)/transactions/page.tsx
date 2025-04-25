@@ -3,7 +3,6 @@
 import { getTransactions } from "@/actions/transactions.actions";
 import { ExportTransactions } from "@/components/ExportTransactions";
 import { FilterMonth } from "@/components/FilterMonth";
-import { Loading } from "@/components/Loading";
 import { RegisterTransactionDialog } from "@/components/RegisterTransactionDialog";
 import { SelectBanksTransaction } from "@/components/SelectBanksTransaction";
 import { SelectEveryCategories } from "@/components/SelectEveryCategories";
@@ -49,8 +48,6 @@ export default function Page() {
       return { transactionsByDate, resume };
     },
   });
-
-  const isTransactionsEmpty = data?.transactionsByDate?.length === 0;
 
   return (
     <div className="flex flex-col">
@@ -138,25 +135,27 @@ export default function Page() {
         </div>
       </div>
 
-      {isPending && (
-        <div className="mt-8">
-          <Loading />
-        </div>
-      )}
-
-      {isTransactionsEmpty && !isPending && (
-        <div className="mt-8 text-neutral-600">
-          Nenhuma transação encontrada no mês de{" "}
-          {format(date, " MMMM", { locale: ptBR })}
-        </div>
-      )}
-
       <div className="flex gap-4">
-        <TransactionsByDate transactionsByDate={data?.transactionsByDate ?? []} />
-        
-        <div className="flex-1 grid grid-cols-2 gap-4">
-          <RechartExpense type="INCOME" totalValue={data?.resume?.totalIncome} />
-          <RechartExpense type="EXPENSE" totalValue={data?.resume?.totalExpense} />
+        <TransactionsByDate
+          date={date}
+          isLoading={isPending}
+          transactionsByDate={data?.transactionsByDate ?? []}
+        />
+
+        <div className="flex-1 flex flex-col gap-3 mt-12">
+          <h1 className="text-2xl text-neutral-400 capitalize">
+            {format(date, "MMMM 'de ' yyyy", { locale: ptBR })}
+          </h1>
+          <div className="grid grid-cols-2 gap-4">
+            <RechartExpense
+              type="INCOME"
+              totalValue={data?.resume?.totalIncome}
+            />
+            <RechartExpense
+              type="EXPENSE"
+              totalValue={data?.resume?.totalExpense}
+            />
+          </div>
         </div>
       </div>
     </div>

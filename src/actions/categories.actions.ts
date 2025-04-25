@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getUserId } from "./user.actions";
+import { getFirstAndLastDayOfMonth } from "@/lib/utils";
 
 export async function getEveryCategories() {
   try {
@@ -126,20 +127,41 @@ export async function deleteCategory(id: string) {
   }
 }
 
+interface AllCategoriesWithTransactionsProps {
+  type: "EXPENSE" | "INCOME";
+  date: Date;
+  filters?: {
+    categoryId?: string;
+    bankId?: string;
+  };
+}
+
 export async function allCategoriesWithTransactions(
-  type: "INCOME" | "EXPENSE"
+  { type, date, filters }: AllCategoriesWithTransactionsProps
 ) {
   try {
     const userId = await getUserId();
 
     if (!userId) throw new Error("User ID not found");
 
+    const { firstDayOfLastMonth, lastDayOfLastMonth } = getFirstAndLastDayOfMonth(date);
+
     const categories = await prisma.categories.findMany({
       where: {
+        id: filters?.categoryId,
         Transactions: {
           some: {
             userId,
+            accountBanksId: {
+              equals: filters?.bankId,
+            }
           },
+          every: {
+            date: {
+              gte: firstDayOfLastMonth,
+              lte: lastDayOfLastMonth,
+            },
+          }
         },
         type,
       },

@@ -15,13 +15,9 @@ export const ResumeTransactions = () => {
     queryFn: async () => await getTransactions({ date }),
   });
 
-  console.log({
-    data,
-  });
-
   if (isPending) {
     return <Loading />;
   }
 
-  return <TableComponent data={data?.transactions || []} columns={columns} />;
+  return <TableComponent data={data?.transactions?.slice(0, 5) || []} columns={columns} />;
 };
