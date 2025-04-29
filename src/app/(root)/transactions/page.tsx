@@ -146,7 +146,7 @@ export default function Page() {
           <h1 className="text-2xl text-neutral-400 capitalize">
             {format(date, "MMMM 'de ' yyyy", { locale: ptBR })}
           </h1>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <RechartExpense
               type="INCOME"
               totalValue={data?.resume?.totalIncome}
