@@ -1,6 +1,6 @@
 "use client";
 
-import { cn, transformToCurrency } from "@/lib/utils";
+import { cn, transformToCurrency, formatDate } from "@/lib/utils";
 import { ICONS_CATEGORIES_EXPENSE } from "@/variants/iconsCategories";
 import { $Enums } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
@@ -40,11 +40,7 @@ export const columns: ColumnDef<Transaction>[] = [
     header: "Data",
     cell: ({ row }) => (
       <span>
-        {row.original.date.toLocaleDateString("pt-BR", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        })}
+        {formatDate(row.original.date)}
       </span>
     ),
   },

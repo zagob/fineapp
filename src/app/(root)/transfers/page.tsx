@@ -49,7 +49,6 @@ export default function Page() {
           </p>
 
           <div className="flex items-center gap-4 mt-4">
-            <FilterMonth />
 
             <div className="flex items-center gap-px">
               <Select

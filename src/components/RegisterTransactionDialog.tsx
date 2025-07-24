@@ -68,6 +68,7 @@ export const RegisterTransactionDialog = ({
   value,
   datetime,
 }: RegisterTransactionDialogProps) => {
+  console.log(datetime);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const queryClient = useQueryClient();
 
@@ -87,7 +88,7 @@ export const RegisterTransactionDialog = ({
   const form = useForm<FormSchemaProps>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      date: datetime ? new Date(datetime) : new Date(),
+      date: new Date("26/03/2025"),
       bank: bankId ?? "",
       category: category ?? "",
       description: description ?? "",

@@ -1,0 +1,454 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========================================
+// ENUMS
+// ========================================
+
+enum BankName {
+  BANCO_DO_BRASIL
+  ITAU
+  ITI
+  PICPAY
+  NUBANK
+  BRADESCO
+  SANTANDER
+  CAIXA
+  INTER
+  C6
+  PAGSEGURO
+  MERCADOPAGO
+  STONE
+  GETNET
+  SAFRA
+  BANRISUL
+  SICOOB
+  SICREDI
+  OUTROS
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+  PAUSED
+  CANCELLED
+}
+
+enum GoalType {
+  SAVINGS
+  INVESTMENT
+  DEBT_PAYMENT
+  PURCHASE
+  EMERGENCY_FUND
+  OTHER
+}
+
+enum NotificationType {
+  GOAL_REMINDER
+  BUDGET_ALERT
+  BILL_DUE
+  LOW_BALANCE
+  SPENDING_SPIKE
+  SYSTEM
+}
+
+enum NotificationStatus {
+  PENDING
+  READ
+  ARCHIVED
+}
+
+// ========================================
+// AUTH MODELS (NextAuth)
+// ========================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Soft delete
+  deletedAt     DateTime?
+  
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  accountBanks  AccountBanks[]
+  categories    Categories[]
+  transactions  Transactions[]
+  transfers     Transfers[]
+  goals         Goals[]
+  notifications Notifications[]
+  budgets       Budgets[]
+  recurringTransactions RecurringTransactions[]
+  
+  // Indexes
+  @@index([email])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ========================================
+// CORE FINANCIAL MODELS
+// ========================================
+
+model AccountBanks {
+  id          String   @id @default(cuid())
+  bank        BankName
+  description String   @db.VarChar(100)
+  amount      Int      @default(0)
+  
+  // Additional fields
+  accountNumber String? @db.VarChar(50)
+  agency        String? @db.VarChar(20)
+  isActive      Boolean @default(true)
+  
+  // Timestamps
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  // Relations
+  userId       String
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transactions[]
+  transfersInitial Transfers[] @relation("BankInitial")
+  transfersDestine Transfers[] @relation("BankDestine")
+
+  // Indexes
+  @@index([userId])
+  @@index([bank])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@map("account_banks")
+}
+
+model Categories {
+  id    String  @id @default(cuid())
+  name  String  @db.VarChar(50)
+  type  TransactionType @default(EXPENSE)
+  color String  @db.VarChar(7) // Hex color
+  icon  String? @db.VarChar(50)
+  
+  // Additional fields
+  description String? @db.VarChar(200)
+  isActive    Boolean @default(true)
+  isDefault   Boolean @default(false)
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  // Relations
+  userId       String
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transactions[]
+
+  // Indexes
+  @@index([userId])
+  @@index([type])
+  @@index([isActive])
+  @@index([deletedAt])
+  @@unique([userId, name, type])
+  @@map("categories")
+}
+
+model Transactions {
+  id             String   @id @default(cuid())
+  date           DateTime
+  type           TransactionType @default(EXPENSE)
+  value          Int
+  
+  // Relations
+  accountBanksId String
+  categoryId     String
+  userId         String
+  
+  // Optional fields
+  description    String? @db.VarChar(200)
+  tags           String[] // Array of tags
+  receipt        String? // URL to receipt image
+  location       String? @db.VarChar(100)
+  
+  // Timestamps
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  deletedAt      DateTime?
+
+  // Relations
+  bank     AccountBanks @relation(fields: [accountBanksId], references: [id], onDelete: Restrict)
+  category Categories   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([userId])
+  @@index([date])
+  @@index([type])
+  @@index([categoryId])
+  @@index([accountBanksId])
+  @@index([deletedAt])
+  @@map("transactions")
+}
+
+model Transfers {
+  id            String   @id @default(cuid())
+  date          DateTime
+  value         Int
+  description   String?  @db.VarChar(200)
+  
+  // Relations
+  bankInitialId String
+  bankDestineId String
+  userId        String
+  
+  // Timestamps
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  // Relations
+  bankInitial AccountBanks @relation(name: "BankInitial", fields: [bankInitialId], references: [id], onDelete: Restrict)
+  bankDestine AccountBanks @relation(name: "BankDestine", fields: [bankDestineId], references: [id], onDelete: Restrict)
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([userId])
+  @@index([date])
+  @@index([bankInitialId])
+  @@index([bankDestineId])
+  @@index([deletedAt])
+  @@map("transfers")
+}
+
+// ========================================
+// NEW FEATURE MODELS
+// ========================================
+
+model Goals {
+  id          String    @id @default(cuid())
+  name        String    @db.VarChar(100)
+  description String?   @db.VarChar(500)
+  targetAmount Int
+  currentAmount Int     @default(0)
+  type        GoalType
+  status      GoalStatus @default(ACTIVE)
+  
+  // Dates
+  startDate   DateTime  @default(now())
+  targetDate  DateTime?
+  completedAt DateTime?
+  
+  // Relations
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  // Indexes
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+  @@index([targetDate])
+  @@index([deletedAt])
+  @@map("goals")
+}
+
+model Budgets {
+  id          String    @id @default(cuid())
+  name        String    @db.VarChar(100)
+  amount      Int
+  spent       Int       @default(0)
+  period      String    @db.VarChar(20) // "monthly", "weekly", "yearly"
+  
+  // Relations
+  categoryId  String?
+  userId      String
+  
+  category    Categories? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  // Indexes
+  @@index([userId])
+  @@index([categoryId])
+  @@index([period])
+  @@index([deletedAt])
+  @@map("budgets")
+}
+
+model Notifications {
+  id          String            @id @default(cuid())
+  title       String            @db.VarChar(100)
+  message     String            @db.VarChar(500)
+  type        NotificationType
+  status      NotificationStatus @default(PENDING)
+  
+  // Relations
+  userId      String
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  readAt      DateTime?
+  deletedAt   DateTime?
+
+  // Indexes
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@map("notifications")
+}
+
+model RecurringTransactions {
+  id          String          @id @default(cuid())
+  name        String          @db.VarChar(100)
+  description String?         @db.VarChar(200)
+  amount      Int
+  type        TransactionType
+  frequency   String          @db.VarChar(20) // "daily", "weekly", "monthly", "yearly"
+  
+  // Relations
+  categoryId  String
+  accountBanksId String
+  userId      String
+  
+  category    Categories   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  bank        AccountBanks @relation(fields: [accountBanksId], references: [id], onDelete: Restrict)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  deletedAt   DateTime?
+  lastExecuted DateTime?
+  nextExecution DateTime?
+
+  // Indexes
+  @@index([userId])
+  @@index([type])
+  @@index([frequency])
+  @@index([nextExecution])
+  @@index([deletedAt])
+  @@map("recurring_transactions")
+}
+
+// ========================================
+// AUDIT MODELS
+// ========================================
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  action      String   @db.VarChar(50) // "CREATE", "UPDATE", "DELETE"
+  tableName   String   @db.VarChar(50)
+  recordId    String
+  oldValues   Json?
+  newValues   Json?
+  
+  // Relations
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+
+  // Indexes
+  @@index([userId])
+  @@index([action])
+  @@index([tableName])
+  @@index([recordId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ========================================
+// RELATION UPDATES
+// ========================================
+
+// Update Categories to include budgets relation
+model Categories {
+  // ... existing fields ...
+  budgets Budgets[]
+}
+
+// Update AccountBanks to include recurring transactions
+model AccountBanks {
+  // ... existing fields ...
+  recurringTransactions RecurringTransactions[]
+}
+
+// Update User to include audit logs
+model User {
+  // ... existing fields ...
+  auditLogs AuditLog[]
+} 

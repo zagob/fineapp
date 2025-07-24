@@ -17,6 +17,20 @@ export function transformToCurrency(value: number) {
   }).format(value / 100);
 }
 
+export function formatDate(date: Date) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+}
+
+export function formatYear(date: Date) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    year: "numeric",
+  }).format(date);
+}
+
 export function getFirstAndLastDayOfMonth(date: Date) {
   const firstDayOfLastMonth = new Date(
     Date.UTC(date.getFullYear(), date.getMonth(), 1, 0, 0, 0)

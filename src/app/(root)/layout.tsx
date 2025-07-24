@@ -1,7 +1,8 @@
 import { Menu } from "@/components/Menu";
 import { Profile } from "@/components/Profile";
 import { SignOut } from "@/components/signOut";
-import { auth, signIn } from "@/lib/auth";
+import { auth } from "@/lib/auth";
+import { LoginPage } from "@/components/LoginPage";
 
 export default async function RootLayout({
   children,
@@ -10,23 +11,9 @@ export default async function RootLayout({
 }>) {
   const session = await auth();
 
-  console.log({
-    session
-  })
-
-  if (!session) return (
-    <main>
-        <div className="text-2xl">Not authenticated</div>
-        <button
-          onClick={async () => {
-            "use server";
-            await signIn("google");
-          }}
-        >
-          SignIn
-        </button>
-      </main>
-  )
+  if (!session) {
+    return <LoginPage />;
+  }
 
   return (
     <main className="min-h-screen px-12 py-8">
@@ -34,7 +21,6 @@ export default async function RootLayout({
         <Menu />
         <div className="flex items-center gap-4">
           <Profile session={session} />
-
           <SignOut />
         </div>
       </div>

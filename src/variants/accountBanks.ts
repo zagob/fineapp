@@ -1,10 +1,4 @@
 import { ICONS_BANKS } from "./iconsBanks";
-import IconItau from "../assets/icons/itau.svg";
-import BancoDoBrasil from "../assets/icons/banco-do-brasil.svg";
-import PicPay from "../assets/icons/picpay.png";
-// import PicPay from "../assets/icons/picpay.svg";
-import ITI from "../assets/icons/iti-itau.svg";
-import Bradesco from "../assets/icons/bradesco.svg";
 
 export const ACCOUNT_BANKS = Object.freeze({
   BANCO_DO_BRASIL: {
@@ -35,12 +29,12 @@ export const ACCOUNT_BANKS = Object.freeze({
 });
 
 export const bankIcons: Record<string, string> = {
-  ITAU: IconItau,
-  BANCO_DO_BRASIL: BancoDoBrasil,
-  PICPAY: PicPay,
-  ITI: ITI,
+  ITAU: "/icons/itau.svg",
+  BANCO_DO_BRASIL: "/icons/banco-do-brasil.svg",
+  PICPAY: "/icons/picpay.png",
+  ITI: "/icons/iti-itau.svg",
   NUBANK: "",
-  BRADESCO: Bradesco,
+  BRADESCO: "/icons/bradesco.svg",
   SANTANDER: "",
   CAIXA: "",
   INTER: "",

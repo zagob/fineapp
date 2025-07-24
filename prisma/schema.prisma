@@ -95,6 +95,8 @@ model AccountBanks {
   TransfersBankInitial Transfers[] @relation("BankInitial")
   TransfersBankDestine Transfers[] @relation("BankDestine")
 
+  deletedAt DateTime?
+
   @@map("account_banks")
 }
 
@@ -114,6 +116,8 @@ model Categories {
   userId       String
   Transactions Transactions[]
 
+  deletedAt DateTime?
+
   @@map("categories")
 }
 
@@ -132,6 +136,8 @@ model Transactions {
   user   User   @relation(fields: [userId], references: [id])
   userId String
 
+  deletedAt DateTime?
+
   @@map("transactions")
 }
 
@@ -147,6 +153,8 @@ model Transfers {
 
   user   User   @relation(fields: [userId], references: [id])
   userId String
+
+  deletedAt DateTime?
 
   @@map("transfers")
 }

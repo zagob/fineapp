@@ -17,7 +17,7 @@ export const CalendarInput = <T extends FieldValues>({
       render={({ field }) => (
         <Calendar
           mode="single"
-          disableNavigation
+          // disableNavigation
           selected={field.value}
           onSelect={field.onChange}
           disabled={(date) => date > new Date()}

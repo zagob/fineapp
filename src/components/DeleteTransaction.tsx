@@ -11,7 +11,7 @@ import {
 import { Button } from "./ui/button";
 import * as LucideIcon from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteTransaction } from "@/actions/transactions.actions";
+import { deleteTransaction } from "@/actions/transactions.actions.soft-delete";
 import { Loading } from "./Loading";
 import { useState } from "react";
 
@@ -30,6 +30,10 @@ export const DialogDeleteTransaction = ({
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["transactions"],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["deleted-transactions"],
         exact: false,
       });
       queryClient.invalidateQueries({
@@ -56,11 +60,11 @@ export const DialogDeleteTransaction = ({
         </DialogTrigger>
         <DialogContent className="bg-zinc-800 border-zinc-700">
           <DialogHeader>
-            <DialogTitle>Deseja remover essa transação?</DialogTitle>
+            <DialogTitle>Mover para a lixeira?</DialogTitle>
             <DialogDescription asChild>
               <div className="p-4 pb-0 flex justify-center items-center gap-2">
                 <Button disabled={isPending} onClick={() => setOpen(false)}>
-                  Nâo
+                  Não
                 </Button>
                 <Button variant="destructive" disabled={isPending} onClick={() => handleDelete()}>
                   {isPending ? <Loading /> : "Sim"}
