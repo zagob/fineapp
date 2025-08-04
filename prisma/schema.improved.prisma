@@ -188,12 +188,9 @@ model Categories {
   name  String  @db.VarChar(50)
   type  TransactionType @default(EXPENSE)
   color String  @db.VarChar(7) // Hex color
-  icon  String? @db.VarChar(50)
   
   // Additional fields
   description String? @db.VarChar(200)
-  isActive    Boolean @default(true)
-  isDefault   Boolean @default(false)
   
   // Timestamps
   createdAt   DateTime @default(now())
